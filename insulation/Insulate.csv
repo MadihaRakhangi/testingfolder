@@ -1,0 +1,9 @@
+SN,Location,Parent Location,Upstream Device Name,No. Poles,SPD Applicable,Earthing System,Nominal Circuit Voltage,Measurement Terminals,Test Voltage (V),Conductor Type,Conductor Size,Insulation Type,Insulation Resistance (MΩ)
+1,MCB-1,LV Board,MCCB-2,Single,No,TNS,230,L1-E,500,Copper,6,PVC,10
+2,MCB-4,Feeder-2,MCCB-1,Single,No,TNS,230,L1-E,500,Aluminium,4,XLPE,1.88
+3,MCB-6,Feeder-3,MCCB-1,Three,No,TNS,415,L1L2L3-E,500,Copper,10,XLPE,0.8
+4,MCB-6,Feeder-3,MCCB-1,Three,No,TNC,415,L1-N,500,Copper,10,XLPE,2.2
+5,MCB-6,Feeder-3,MCCB-1,Three,No,TNC,415,L2-N,500,Copper,10,XLPE,3.6
+6,MCB-6,Feeder-3,MCCB-1,Three,No,TNC,415,L3-N,500,Copper,10,XLPE,0.5
+7,Socket-2,LV Board,MCB-6,Single,Yes,TNS,230,L1-E,500,Aluminium,2.5,PVC,0.9
+8,HT Breaker-1,HT Panel,Main HT Incomer,Three,No,TNS,11000,L1L2L3-E,1000,Aluminium,400,XLPE,50

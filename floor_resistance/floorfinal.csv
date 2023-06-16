@@ -1,0 +1,4 @@
+SN,Location,Parent Location,Facility Area,Distance from previous test location (m),Nominal Voltage to Earth of System (V),Applied Test Voltage (V),Measured Output Current (mA),EffectiveResistance
+1,Point-1,Main Floor,LT Panel Room,1.2,230,230,3.1,74.19354838709677
+2,Point-2,Wall -1,LT Panel Room,0.9,230,230,5.6,41.07142857142858
+3,Point-3,Main Floor,Office Room,1.1,230,230,3.2,71.875
