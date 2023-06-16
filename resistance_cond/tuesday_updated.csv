@@ -1,0 +1,3 @@
+Conductor Location,Facility Area,No of runs of Conductor,Conductor Type,Conductor Size (sq. mm),Conductor Length (m),Conductor Temperature (°C),Is Continuity found?,Lead Internal Resistance (?),Continuity Resistance (?),Corrected Continuity Resistance (Ω),Specific Conductor Resistance (MΩ/m) at 30°C
+Main ACB,Electrical Panel Room,2,Cu,6,10,32,Yes,0.1,1.1,1.0,9.914930E-07
+MCCB-1,DB-1,1,GI,10,15,40,No,0.2,2.5,2.3,2.161451E-06
