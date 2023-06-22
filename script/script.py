@@ -560,7 +560,7 @@ def voltage_table(vf, doc):
     return doc
 
 
-def Resi_create_table(rf, doc):
+def resi_table(rf, doc):
     rf["Result"] = np.NaN
     for index, row in rf.iterrows():
         trip_time_str = row["Trip Time (ms)"]
@@ -863,13 +863,27 @@ def voltage_pie(vf):
     return graph
 
 
-def Earth_Pie(rf):
+def resi_pie(rf):
     plt.figure(figsize=(6, 6))
     result_counts = rf["Result"].value_counts()
     labels = result_counts.index
     values = result_counts.values
     colors = ["#00FF00", "#FF0000"]
-    plt.pie(values, labels=labels, autopct="%1.1f%%", shadow=True, startangle=90,colors=colors)
+    plt.pie(values, labels=labels, autopct="%1.1f%%", shadow=False, startangle=90,colors=colors)
+    plt.title("Residual Test Results")
+    plt.axis("equal")  # Equal aspect ratio ensures that the pie is drawn as a circle
+    graph = io.BytesIO()
+    plt.savefig(graph)
+    plt.close()
+    return graph
+
+def earth_pie(rf):
+    plt.figure(figsize=(6, 6))
+    result_counts = rf["Result"].value_counts()
+    labels = result_counts.index
+    values = result_counts.values
+    colors = ["#00FF00", "#FF0000"]
+    plt.pie(values, labels=labels, autopct="%1.1f%%", shadow=False, startangle=90,colors=colors)
     plt.title("Earth Pit Electrode Test Results")
     plt.axis("equal")  # Equal aspect ratio ensures that the pie is drawn as a circle
     graph = io.BytesIO()
@@ -946,30 +960,15 @@ def main():
         run.font.name = "Calibre"  # Replace with the desired font name
         run.font.size = Pt(7)  # Replace with the desired font size
 
-    # left_header_image_path = "efficienergy-logo.jpg"  # Replace with the actual image file path
-    # left_htable = header.add_table(1, 2, width=Inches(6))
-    # left_htab_cells = left_htable.rows[0].cells
-    # left_ht0 = left_htab_cells[0].paragraphs[0]
-    # left_ht0_run = left_ht0.add_run()
-    # left_ht0_run.add_picture(left_header_image_path, width=Inches(1))
-    # left_ht0.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT
-
-    # right_header_image_path = "secqr logo.png"  # Replace with the actual image file path
-    # right_htable = header.add_table(1, 2, width=Inches(6))
-    # right_htab_cells = right_htable.rows[0].cells
-    # right_ht1 = right_htab_cells[1].paragraphs[0]
-    # right_ht1_run = right_ht1.add_run()
-    # right_ht1_run.add_picture(right_header_image_path, width=Inches(1))
-    # right_ht1.alignment = WD_PARAGRAPH_ALIGNMENT.RIGHT
 
     doc.add_paragraph("FLOOR-RESISTANCE TEST")
     doc = resistance_table(df, doc)
     graph_resistance = resistance_graph(df)
-    doc.add_picture(graph_resistance, width=Inches(5), height=Inches(3))
+    doc.add_picture(graph_resistance)
     pie_resistance = resistance_pie(df)
-    doc.add_picture(pie_resistance, width=Inches(5), height=Inches(3))
+    doc.add_picture(pie_resistance)
 
-    doc.add_page_break()
+
     doc.add_paragraph("INSULATION TEST")
     doc = insulation_table(mf, doc)
     graph_insulation = insulation_graph(mf)
@@ -977,7 +976,7 @@ def main():
     pie_insulation = insulation_pie(mf)
     doc.add_picture(pie_insulation, width=Inches(5), height=Inches(3))
 
-    doc.add_page_break()
+    
     doc.add_paragraph("PHASE SEQUENCE TEST")
     doc = phase_table(pf, doc)
     graph_phase = phase_graph(pf)
@@ -985,7 +984,7 @@ def main():
     pie_phase = phase_pie(pf)
     doc.add_picture(pie_phase, width=Inches(5), height=Inches(3))
 
-    doc.add_page_break()
+    
     doc.add_paragraph("POLARITY TEST")
     doc = polarity_table(af, doc)
     graph_polarity = polarity_graph(af)
@@ -993,7 +992,7 @@ def main():
     pie_polarity = polarity_pie(af)
     doc.add_picture(pie_polarity, width=Inches(5), height=Inches(3))
 
-    doc.add_page_break()
+
     doc.add_paragraph("VOLTAGE DROP TEST")
     doc = voltage_table(vf, doc)
     graph_voltage = voltage_graph(vf)
@@ -1001,18 +1000,20 @@ def main():
     pie_voltage = voltage_pie(vf)
     doc.add_picture(pie_voltage, width=Inches(5), height=Inches(3))
 
-    doc.add_page_break()
+    
     doc.add_paragraph("Residual Current Device Test")
-    doc = Resi_create_table(rf, doc)
+    doc = resi_table(rf, doc)
     graph_resi = Resi_graph(rf)
     doc.add_picture(graph_resi, width=Inches(6), height=Inches(3))
+    pie_resi = resi_pie(vf)
+    doc.add_picture(pie_resi, width=Inches(5), height=Inches(3))
 
-    doc.add_page_break()
+
     doc.add_paragraph("EARTH PIT  RESISTANCE TEST")
     doc = Earth_table(ef, doc)
     graph_earth = voltage_graph(vf)
     doc.add_picture(graph_earth, width=Inches(6))
-    graph_pie = Earth_Pie(ef)
+    graph_pie = earth_pie(ef)
     doc.add_picture(graph_pie, width=Inches(6))
 
     doc.save("scriptreport.docx")

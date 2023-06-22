@@ -13,14 +13,64 @@ E="residual.csv"
 rf = pd.read_csv("residual.csv")
 
 
+# def Resi_result(Type, Test_Current, Rated_OpCurrent, D_Tripped, Trip_Time):
+#     if Type == "AC":
+#         if Test_Current == 0.5 * Rated_OpCurrent:
+#             if Trip_Time == "-":
+#                 if D_Tripped == "No":
+#                     return "Pass"
+#                 else:
+#                     return "Fail"
+#         elif Test_Current == 1 * Rated_OpCurrent and D_Tripped == "Yes":
+#             if Trip_Time <= 300:
+#                 return "Pass"
+#             else:
+#                 return "Fail"
+#         elif Test_Current == 2 * Rated_OpCurrent and D_Tripped == "Yes":
+#             if Trip_Time <= 150:
+#                 return "Pass"
+#             else:
+#                 return "Fail"
+#         elif Test_Current == 5 * Rated_OpCurrent and D_Tripped == "Yes":
+#             if Trip_Time <= 40:
+#                 return "Pass"
+#             else:
+#                 return "Fail"
+#         else:
+#             return "/="
+#     elif Type == "A":
+#         if Test_Current == 0.5 * Rated_OpCurrent:
+#             if D_Tripped == "No":
+#                 return "Pass"
+#             else:
+#                 return "Fail"
+#         elif Test_Current == 1 * Rated_OpCurrent and D_Tripped == "Yes":
+#             if 130 <= Trip_Time <= 500:
+#                 return "Pass"
+#             else:
+#                 return "Fail"
+#         elif Test_Current == 2 * Rated_OpCurrent and D_Tripped == "Yes":
+#             if 60 <= Trip_Time <= 200:
+#                 return "Pass"
+#             else:
+#                 return "Fail"
+#         elif Test_Current == 5 * Rated_OpCurrent and D_Tripped == "Yes":
+#             if 50 <= Trip_Time <= 150:
+#                 return "Pass"
+#             else:
+#                 return "Fail"
+#         else:
+#             return "Fail"
+#     else:
+#         return "Pass"
+
 def Resi_result(Type, Test_Current, Rated_OpCurrent, D_Tripped, Trip_Time):
     if Type == "AC":
         if Test_Current == 0.5 * Rated_OpCurrent:
-            if Trip_Time == "-":
-                if D_Tripped == "No":
-                    return "Pass"
-                else:
-                    return "Fail"
+            if D_Tripped == "No":
+                return "Pass"
+            else:
+                return "Fail"
         elif Test_Current == 1 * Rated_OpCurrent and D_Tripped == "Yes":
             if Trip_Time <= 300:
                 return "Pass"
@@ -37,7 +87,7 @@ def Resi_result(Type, Test_Current, Rated_OpCurrent, D_Tripped, Trip_Time):
             else:
                 return "Fail"
         else:
-            return "/="
+            return "Fail"
     elif Type == "A":
         if Test_Current == 0.5 * Rated_OpCurrent:
             if D_Tripped == "No":
@@ -63,6 +113,7 @@ def Resi_result(Type, Test_Current, Rated_OpCurrent, D_Tripped, Trip_Time):
             return "Fail"
     else:
         return "Pass"
+
 
 
 def Resi_create_table(rf, doc):
@@ -135,6 +186,20 @@ def Resi_graph(rf):
     plt.savefig(graph1)
     plt.close()
     return graph1
+
+def Resi_Pie(rf):
+    plt.figure(figsize=(6, 6))
+    result_counts = rf["Result"].value_counts()
+    labels = result_counts.index
+    values = result_counts.values
+    colors = ["#00FF00", "#FF0000"]
+    plt.pie(values, labels=labels, autopct="%1.1f%%", shadow=False, startangle=90,colors=colors)
+    plt.title("Residual Test Results")
+    plt.axis("equal")  # Equal aspect ratio ensures that the pie is drawn as a circle
+    graph = io.BytesIO()
+    plt.savefig(graph)
+    plt.close()
+    return graph
     
 def main():
     rf = pd.read_csv("residual.csv")
@@ -144,9 +209,11 @@ def main():
         section.left_margin = Inches(0.2)
     doc = Resi_create_table(rf, doc)
     
-    doc = Resi_create_table(rf, doc)
     graph_filename = Resi_graph(rf)  # Store the graph filename
     doc.add_picture(graph_filename, width=Inches(6), height=Inches(4))  # Add the graph to the document
+
+    graph_pie = Resi_Pie(rf)
+    doc.add_picture(graph_pie, width=Inches(6))
     doc.save("Residual.docx")
 
 

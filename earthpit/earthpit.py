@@ -89,9 +89,9 @@ def Earth_graph(ef):
     plt.close()
     return graph
 
-def Earth_Pie(rf):
+def Earth_Pie(ef):
     plt.figure(figsize=(6, 6))
-    result_counts = rf["Result"].value_counts()
+    result_counts = ef["Result"].value_counts()
     labels = result_counts.index
     values = result_counts.values
     colors = ["blue", "orange"]
