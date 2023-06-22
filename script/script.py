@@ -399,6 +399,10 @@ def insulation_table(df, doc):
     for i in range(0, num_rows):
         res_index = i - 1
         table.cell(i + 1, num_cols).text = Results[res_index]
+        if Results == "Pass":
+            shading_elem = parse_xml(
+                f'<w:shd {nsdecls("w")} w:fill="d9ead3"/>'
+                )
     font_size = 6.5
 
     for row in table.rows:
@@ -915,6 +919,10 @@ def main():
     ef = pd.read_csv(G)
 
     doc = Document()
+    
+    normal_style = doc.styles['Normal']
+    normal_style.font.name = 'Calibri'
+    normal_style.font.size = Pt(12)
     for section in doc.sections:
         section.left_margin = Inches(1)
     title = doc.add_heading("TESTING REPORT", 0)
@@ -957,7 +965,7 @@ def main():
     footer_paragraph = footer.paragraphs[0]
     footer_paragraph.text = "This Report is the Intellectual Property of M/s Efficienergi Consulting Pvt. Ltd. Plagiarism in Part or Full will be considered as theft of Intellectual property. The Information in this Report is to be treated as Confidential."
     for run in footer_paragraph.runs:
-        run.font.name = "Calibre"  # Replace with the desired font name
+        run.font.name = "Calibri"  # Replace with the desired font name
         run.font.size = Pt(7)  # Replace with the desired font size
 
 
