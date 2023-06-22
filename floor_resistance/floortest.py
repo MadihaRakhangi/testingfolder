@@ -19,7 +19,7 @@ df.to_csv('floorfinal.csv', index=False)
 
 
 
-def result(Nom_EVolt, ATV, Eff_Floor, Dist_loc):
+def resistanceresult(Nom_EVolt, ATV, Eff_Floor, Dist_loc):
     if Nom_EVolt <= 500 and Dist_loc >= 1:
         if ATV == Nom_EVolt and Eff_Floor >= 50:
             return "pass"
@@ -36,18 +36,18 @@ def result(Nom_EVolt, ATV, Eff_Floor, Dist_loc):
         return "Invalid input"
 
 
-def rang(length):
+def resistancerang(length):
     res = []
     for row in range(length):
         Nom_EVolt = df.iloc[row, 5]
         Dist_loc = df.iloc[row, 4]
         ATV = df.iloc[row, 6]
         Eff_Floor = df.iloc[row, 8]
-        res.append(result(Nom_EVolt, ATV, Eff_Floor, Dist_loc))
+        res.append(resistanceresult(Nom_EVolt, ATV, Eff_Floor, Dist_loc))
     return res
 
 
-def create_table(df, doc):
+def resistance_table(df, doc):
     table_data = df.iloc[:, :]
     num_rows, num_cols = table_data.shape
     table = doc.add_table(rows=num_rows + 1, cols=num_cols + 1)
@@ -79,7 +79,7 @@ def create_table(df, doc):
                 value = "{:.2f}".format(value)
             table.cell(i, j).text = str(value)
 
-    Results = rang(num_rows)
+    Results = resistancerang(num_rows)
     table.cell(0, num_cols).text = "Result"
     table.cell(0, num_cols).width = Inches(0.6)
     for i in range(num_rows):
@@ -97,22 +97,21 @@ def create_table(df, doc):
 
 
 
-def scatter_graph(df):
+def resistance_graph(df):
     x = df["Distance from previous test location (m)"]
     y = df["EffectiveResistance"]
     plt.scatter(x, y)
     plt.xlabel("Distance from previous test location (m)")
     plt.ylabel("Effectivefloor")
     plt.title("Distance from previous test location (m) VS Effectivefloor")
-    plt.savefig("scatter_graph.png")
-    graph = io.BytesIO()
-    plt.savefig(graph)
+    graph1 = io.BytesIO()
+    plt.savefig(graph1)
     plt.close()
-    return graph
+    return graph1
 
 
-def pie_chart(df):
-    df['Result'] = rang(df.shape[0])
+def resistance_pie(df):
+    df['Result'] = resistancerang(df.shape[0])
     df_counts = df['Result'].value_counts()
     labels = df_counts.index.tolist()
     values = df_counts.values.tolist()
@@ -120,11 +119,10 @@ def pie_chart(df):
     plt.pie(values, labels=labels, autopct='%1.1f%%', startangle=90)
     plt.axis('equal')
     plt.title('Test Results')
-    plt.savefig('pie_chart.png')
-    graph = io.BytesIO()
-    plt.savefig(graph)
+    graph3 = io.BytesIO()
+    plt.savefig(graph3)
     plt.close()
-    return graph
+    return graph3
 
 
 def main():
@@ -132,11 +130,11 @@ def main():
     df = pd.read_csv("floorfinal.csv")
     doc = docx.Document()
     doc.add_heading('FLOOR TEST', 0)
-    doc = create_table(df, doc)
-    scatter_graph_img = scatter_graph(df)
-    doc.add_picture(scatter_graph_img, width=Inches(5), height=Inches(3))
-    pie_chart_img = pie_chart(df)
-    doc.add_picture(pie_chart_img, width=Inches(5), height=Inches(3))
+    doc = resistance_table(df, doc)
+    graph_resistance = resistance_graph(df)
+    doc.add_picture(graph_resistance, width=Inches(5), height=Inches(3))
+    pie_resistance = resistance_pie(df)
+    doc.add_picture(pie_resistance, width=Inches(5), height=Inches(3))
     doc.save("floor.docx")
 
 

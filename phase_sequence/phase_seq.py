@@ -8,23 +8,27 @@ from docx.shared import Inches
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 from docx.shared import Pt, RGBColor
 
-def result(phase_seq):
+P="phasesequence.csv"
+pf = pd.read_csv("phasesequence.csv")
+
+
+def phase_result(phase_seq):
     if phase_seq == 'RYB':
         return "CLOCKWISE"
     else:
         return "ANTICLOCKWISE"
 
-def rang(df):
-    res = []
-    phase_seqs = df["Phase Sequence"]
+def phaserang(pf):
+    res3 = []
+    phase_seqs = pf["Phase Sequence"]
     for seq in phase_seqs:
         if seq == "RYB":
-            res.append("CLOCKWISE")
+            res3.append("CLOCKWISE")
         elif seq == "RBY":
-            res.append("ANTICLOCKWISE")
+            res3.append("ANTICLOCKWISE")
         else:
-            res.append("UNKNOWN")
-    return res
+            res3.append("UNKNOWN")
+    return res3
 
 # def rang(df):
 #     res = []
@@ -33,7 +37,7 @@ def rang(df):
 #         res.append(result(phase_seq))
 #     return res
 
-def create_table(df, doc):
+def phase_table(df, doc):
     table_data = df.iloc[:, :]
     num_rows, num_cols = table_data.shape
     table = doc.add_table(rows=num_rows + 1, cols=num_cols + 1)
@@ -61,7 +65,7 @@ def create_table(df, doc):
     for i, row in enumerate(table_data.itertuples(), start=0):
         for j, value in enumerate(row[1:], start=0):
             table.cell(i + 1, j).text = str(value)
-    results = rang(df)
+    results = phaserang(pf)
 
     table.cell(0, num_cols).text = "Result"
     for i, result in enumerate(results, start=1):
@@ -76,42 +80,39 @@ def create_table(df, doc):
                     run.font.size = Pt(font_size)
     return doc
 
-def bar_graph(df):
+def phase_graph(df):
     x = df["Phase Sequence"]
     y = df["V-L3-N"]
     plt.bar(x, y)
     plt.xlabel("Phase Sequence")
     plt.ylabel("V-L3-N")
     plt.title("Phase Sequence by V-L3-N")
-    graph = io.BytesIO()
-    plt.savefig(graph, format='png')
+    graph4 = io.BytesIO()
+    plt.savefig(graph4)
     plt.close()
-    graph.seek(0)
-    return graph
+    return graph4
 
-def pie_chart(df):
-    df['Result'] = rang(df)
-    df_counts = df['Result'].value_counts()
-    labels = df_counts.index.tolist()
-    values = df_counts.values.tolist()
-
+def phase_pie(pf):
+    pf['Result'] = phaserang(pf)
+    pf_counts = pf['Result'].value_counts()
+    labels = pf_counts.index.tolist()
+    values = pf_counts.values.tolist()
     plt.pie(values, labels=labels, autopct='%1.1f%%', startangle=90)
     plt.axis('equal')
     plt.title('Test Results')
-    graph = io.BytesIO()
-    plt.savefig(graph, format='png')
+    graph5 = io.BytesIO()
+    plt.savefig(graph5)
     plt.close()
-    graph.seek(0)
-    return graph
+    return graph5
 
 def main():
-    df = pd.read_csv("phasesequence.csv")
+    pf = pd.read_csv("phasesequence.csv")
     doc = Document()
     doc.add_heading('Phase Sequence test', 0)
-    doc = create_table(df, doc)
-    bar_chart = bar_graph(df)
+    doc = phase_table(pf, doc)
+    bar_chart = phase_graph(pf)
     doc.add_picture(bar_chart, width=Inches(5), height=Inches(3))
-    pie_diag = pie_chart(df)
+    pie_diag = phase_pie(pf)
     doc.add_picture(pie_diag, width=Inches(5), height=Inches(3))
     doc.save("phasesequence.docx")
 

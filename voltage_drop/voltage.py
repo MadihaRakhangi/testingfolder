@@ -5,28 +5,19 @@ from docx.shared import Inches
 from docx.shared import Pt
 import io
 
-df = pd.read_csv("voltage.csv")
+V="voltage.csv"
+vf = pd.read_csv("voltage.csv")
 
-SN = df.iloc[:, [0]]  # Conductor Location
-Cir_From = df.iloc[:, [1]]  # Facility Area
-Cir_To = df.iloc[:, [2]]  # No of runs of Conductor
-MV_From = df.iloc[:, [3]]  # Conductor Type
-MV_To = df.iloc[:, [4]]  # Conductor Size (sq. mm)
-NCV = df.iloc[:, [5]]  # Conductor Length (m)
-Type_ISS = df.iloc[:, [6]]  # Conductor Temperature (¡C)
-PoS = df.iloc[:, [7]]  # Is Continuity found?
-Cable_Length = df.iloc[:, [8]]  # Lead Internal Resistance (?)
-Cond_Type = df.iloc[:, [9]]
-Ins_Type = df.iloc[:, [10]]  # Continuity Resistance (?)
 
-df["Calculated Voltage Drop (V)"] = (
-    df["Measured Voltage (V, L-N)[FROM]"] - df["Measured Voltage (V, L-N)[TO]"]
+
+vf["Calculated Voltage Drop (V)"] = (
+    vf["Measured Voltage (V, L-N)[FROM]"] - vf["Measured Voltage (V, L-N)[TO]"]
 )
-df["Voltage Drop %"] = (
-    df["Calculated Voltage Drop (V)"] / df["Measured Voltage (V, L-N)[FROM]"]
+vf["Voltage Drop %"] = (
+    vf["Calculated Voltage Drop (V)"] / vf["Measured Voltage (V, L-N)[FROM]"]
 ) * 100
-df["Voltage Drop %"] = df["Voltage Drop %"].round(decimals=2)
-df.to_csv("voltage_upd.csv", index=False)
+vf["Voltage Drop %"] = vf["Voltage Drop %"].round(decimals=2)
+vf.to_csv("voltage_upd.csv", index=False)
 
 lim1 = 3
 lim2 = 5
@@ -35,7 +26,7 @@ lim4 = 8
 
 
 
-def result(VD, Type_ISS, PoS, Dist):
+def voltage_result(VD, Type_ISS, PoS, Dist):
     if Dist <= 0:
         if VD <= lim1:
             if Type_ISS == "Public" and PoS == "Lighting":
@@ -110,19 +101,19 @@ def result(VD, Type_ISS, PoS, Dist):
 
 
 
-def rang(length):
+def voltage_rang(length):
     res = []
     for row in range(0, length):
-        VD_val = df.iloc[row, 12]
-        Type_ISS_val = df.iloc[row, 6]
-        PoS_val = df.iloc[row, 7]
-        Dist = df.iloc[row, 8] - 100  # Calculate Dist for each row
-        res.append(result(VD_val, Type_ISS_val, PoS_val, Dist))
+        VD_val = vf.iloc[row, 12]
+        Type_ISS_val = vf.iloc[row, 6]
+        PoS_val = vf.iloc[row, 7]
+        Dist = vf.iloc[row, 8] - 100  # Calculate Dist for each row
+        res.append(voltage_result(VD_val, Type_ISS_val, PoS_val, Dist))
     return res
 
 
-def create_table(df, doc):
-    table_data = df.iloc[:, 0:]
+def voltage_table(vf, doc):
+    table_data = vf.iloc[:, 0:]
     num_rows, num_cols = table_data.shape
     table = doc.add_table(rows=num_rows + 1, cols=num_cols + 1)
     table.style = "Table Grid"
@@ -148,7 +139,7 @@ def create_table(df, doc):
     for i, row in enumerate(table_data.itertuples(), start=1):
         for j, value in enumerate(row[1:], start=0):
             table.cell(i, j).text = str(value)
-    Results = rang(num_rows)
+    Results = voltage_rang(num_rows)
     table.cell(0, num_cols).text = "Result"
     table.cell(0, num_cols).width = Inches(0.8)
     for i in range(num_rows):
@@ -164,9 +155,9 @@ def create_table(df, doc):
     return doc
 
 
-def graph(df):
-    x = df["Voltage Drop %"]
-    y = df["Calculated Voltage Drop (V)"]
+def voltage_graph(vf):
+    x = vf["Voltage Drop %"]
+    y = vf["Calculated Voltage Drop (V)"]
     plt.bar(x, y)
     plt.xlabel("Voltage Drop %")
     plt.ylabel("Calculated Voltage Drop (V)")
@@ -176,13 +167,28 @@ def graph(df):
     plt.close()
     return graph
 
+def voltage_pie(vf):
+    vf['Result'] = voltage_rang(len(vf))
+    vf_counts = vf['Result'].value_counts()
+    labels = vf_counts.index.tolist()
+    values = vf_counts.values.tolist()
+    plt.pie(values, labels=labels, autopct='%1.1f%%', startangle=90)
+    plt.axis('equal')
+    plt.title('Test Results')
+    graph = io.BytesIO()
+    plt.savefig(graph)
+    plt.close()
+    return graph
+
 
 def main():
     doc = Document()
     doc.add_heading("RESISTANCE CONDUCTOR TEST", 0)
-    doc = create_table(df, doc)
-    histo_graph = graph(df)
-    doc.add_picture(histo_graph, width=Inches(6))
+    doc = voltage_table(vf, doc)
+    graph_voltage = voltage_graph(vf)
+    doc.add_picture(graph_voltage, width=Inches(6))
+    pie_voltage= voltage_pie(vf)
+    doc.add_picture(pie_voltage, width=Inches(5), height=Inches(3))
     doc.save("voltage.docx")
 
 

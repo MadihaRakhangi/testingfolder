@@ -1,0 +1,17 @@
+Location,Parent Location,Facility Area,Type of Voltage Waveform,Type of Earthing System,Nominal Line to Earth Voltage (V),Nominal Current Rating(A),"Rated Residual Operating Current,I?n (mA)",Type,Trip curve type,No. of Poles,Test Current (mA),Trip Current (mA),Trip Time (ms),Device Tripped
+RCCB-1,LT Panel,LT Panel Room,AC,TN,230,100,100,A,Standard,2,50,-,-,No
+RCCB-1,LT Panel,LT Panel Room,AC,TN,230,100,100,A,Standard,3,100,101,151,Yes
+RCCB-1,LT Panel,LT Panel Room,AC,TN,230,100,100,A,Standard,4,200,201,102,Yes
+RCCB-1,LT Panel,LT Panel Room,AC,TN,230,100,100,A,Standard,5,500,501,75,Yes
+RCCB - 2,DB,Workshop Area,AC,TN,228,63,100,AC,General,2,50,50,90,Yes
+RCCB - 2,DB,Workshop Area,AC,TN,229,63,100,AC,General,3,100,102,352,Yes
+RCCB - 2,DB,Workshop Area,AC,TN,230,63,100,AC,General,4,200,202,156,Yes
+RCCB - 2,DB,Workshop Area,AC,TN,231,63,100,AC,General,5,500,502,57,Yes
+RCCB-1,LT Panel,LT Panel Room,AC,TN,230,100,100,A,Standard,2,50,502,57,Yes
+RCCB-1,LT Panel,LT Panel Room,AC,TN,230,100,100,A,Standard,3,100,101,1500,Yes
+RCCB-1,LT Panel,LT Panel Room,AC,TN,230,100,100,A,Standard,4,200,201,102,No
+RCCB-1,LT Panel,LT Panel Room,AC,TN,230,100,100,A,Standard,5,500,501,1000,Yes
+RCCB - 2,DB,Workshop Area,AC,TN,228,63,100,AC,General,2,50,-,-,No
+RCCB - 2,DB,Workshop Area,AC,TN,229,63,100,AC,General,3,100,102,250,Yes
+RCCB - 2,DB,Workshop Area,AC,TN,230,63,100,AC,General,4,200,202,140,Yes
+RCCB - 2,DB,Workshop Area,AC,TN,231,63,100,AC,General,5,500,502,33,Yes

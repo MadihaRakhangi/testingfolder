@@ -1,5 +1,5 @@
 import pytest
-from Instest import result , rang , graph , graph_pie , create_table
+from Insulationtest import insualtion_result , insulationrang , insulation_graph , insulation_pie , insulation_table
 import pandas as pd
 import io
 import os
@@ -15,9 +15,21 @@ from docx import Document
 
 test_df=pd.read_csv("Insulate.csv")
 
+@pytest.fixture
+def sample_dataframe():
+                                                           
+    df = pd.DataFrame({                                           # Define a sample dataframe for testing
+        "Nominal Circuit Voltage": [10, 100, 400],
+        "Test Voltage": [250, 500, 1900],
+        "Insulator Resistance": [0.5, 1.8, 0.9]
+    })
+    return df
+
+
+
 def test_result():
-    assert result(10, 250, 0.5) == "Satisfactory"
-    assert result(100, 500, 0.8) == "Unsatisfactory"
+    assert insualtion_result(10, 250, 0.5) == "Satisfactory"
+    assert insualtion_result(100, 500, 0.8) == "Unsatisfactory"
 
 
 def test_rang():
@@ -26,7 +38,7 @@ def test_rang():
          "Test Voltage": [250, 500, 1900],
          "Insulator Resistance": [0.5, 1.8, 0.9]
     })
-    assert rang(df.shape[0]) == ["Satisfactory", "Satisfactory", "Unsatisfactory"]
+    assert insulationrang(df.shape[0]) == ["Satisfactory", "Satisfactory", "Unsatisfactory"]
     
 
 def test_create_table():
@@ -37,7 +49,7 @@ def test_create_table():
     })
 
     doc = Document()                                  # Create a Document object
-    doc = create_table(df, doc)                      
+    doc = insulation_table(df, doc)                      
     temp_file = "temp_doc.docx"                        # Save the document as a temporary file
     temp_file = "temp_doc.docx"
     doc.save(temp_file)
@@ -47,20 +59,15 @@ def test_create_table():
     table = tables[0]
     assert len(table.rows) == df.shape[0] + 1            # Include header row
     assert len(table.columns) == df.shape[1]+1           #include the result coloumn
-    os.remove(temp_file)                                 # Clean up the temporary file
+    os.remove(temp_file) 
 
 
-# def test_graph():
-   
-#     df = pd.DataFrame({
-#         "Location": ["A", "B", "C"],
-#         "Nominal Circuit Voltage": [100, 200, 300]
-#     })
-#     graph_obj = graph(df)                         #create graph func and graph object
-#     assert isinstance(graph_obj, io.BytesIO)      #verify the graph object
-#     graph_obj.seek(0)  
-#     loaded_graph = imread(graph_obj)                           # Reset the stream position to the beginning
-#     # loaded_graph = plt.imread(graph_obj)           # Load the graph from the stream
-#     assert loaded_graph is not None                 # Perform assertions on the loaded graph
-#     plt.imshow(loaded_graph)
-#     plt.show()
+def test_graph(sample_dataframe):
+    graph2 = insulation_graph(sample_dataframe)
+    # Add assertions to check the generated graph
+
+def test_pie(sample_dataframe):
+    graph4 = insulation_pie(sample_dataframe)
+    # Add assertions to check the generated graph
+
+

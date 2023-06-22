@@ -1,0 +1,4 @@
+SN,Location,Parent Location,Facility Area,Device Type,Line to Neutral Voltage (V),Type of Supply,Polarity Reference
+1,MCB-1,DB-1,Offiice Room,MCB,230,AC,Cores
+2,DC MCB-2,UPS,Electrical Panel Room,MCB,220,DC,Device
+3,RCB-2,DB-2,Workshop,RCCB,235,AC,Cores

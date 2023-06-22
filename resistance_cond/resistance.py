@@ -2,27 +2,14 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import docx
 from docx import Document
-import csv
 import io
 from docx.shared import Inches
-from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
-from docx.shared import Pt, RGBColor
+from docx.shared import Pt
 
-df = pd.read_csv("tuesday.csv")
+E="resistance.csv"
+rf=pd.read_csv(E)
 
-C_Loc = df.iloc[:, [0]]  # Conductor Location
-Fac_A = df.iloc[:, [1]]  # Facility Area
-N_Run = df.iloc[:, [2]]  # No of runs of Conductor
-Cond_T = df.iloc[:, [3]]  # Conductor Type
-Cond_S = df.iloc[:, [4]]  # Conductor Size (sq. mm)
-Cond_L = df.iloc[:, [5]]  # Conductor Length (m)
-Cond_Temp = df.iloc[:, [6]]  # Conductor Temperature (¡C)
-Conti = df.iloc[:, [7]]  # Is Continuity found?
-Load_IR = df.iloc[:, [8]]  # Lead Internal Resistance (?)
-Cont_Resis = df.iloc[:, [9]]  # Continuity Resistance (?)
-
-
-def alpha(Cond_T):
+def alpha(Cond_T):                               # Function to calculate alpha value based on conductor typ      
     if Cond_T == "Al":
         return 0.0038
     elif Cond_T == "Cu":
@@ -34,24 +21,20 @@ def alpha(Cond_T):
     else:
         return None
 
+# Calculate Corrected Continuity Resistance
+rf['Corrected Continuity Resistance (Ω)'] = rf['Continuity Resistance (?)'] - rf['Lead Internal Resistance (?)']
 
-df = pd.read_csv("tuesday.csv")
-df['Corrected Continuity Resistance (Ω)'] = df['Continuity Resistance (?)'] - df['Lead Internal Resistance (?)']
-alpha_values = df['Conductor Type'].apply(alpha)
-df['Specific Conductor Resistance (MΩ/m) at 30°C'] = df['Corrected Continuity Resistance (Ω)'] / (
-        1 + alpha_values * (df['Conductor Temperature (°C)'] - 30))
-
-df['Specific Conductor Resistance (MΩ/m) at 30°C']=df['Specific Conductor Resistance (MΩ/m) at 30°C']/1000000
-
-df['Specific Conductor Resistance (MΩ/m) at 30°C'] = df['Specific Conductor Resistance (MΩ/m) at 30°C'].apply(
+# Calculate Specific Conductor Resistance at 30°C
+alpha_values = rf['Conductor Type'].apply(alpha)
+rf['Specific Conductor Resistance (MΩ/m) at 30°C'] = rf['Corrected Continuity Resistance (Ω)'] / (
+    1 + alpha_values * (rf['Conductor Temperature (°C)'] - 30))
+rf['Specific Conductor Resistance (MΩ/m) at 30°C'] /= 1000000
+rf['Specific Conductor Resistance (MΩ/m) at 30°C'] = rf['Specific Conductor Resistance (MΩ/m) at 30°C'].apply(
     lambda x: format(x, 'E'))
-df.to_csv('tuesday_updated.csv', index=False)
-
-C_ContR = df.iloc[:, [10]]  # Corrected Continuity Resistance (?)
-S_CondR = df.iloc[:, [11]]  # Specific Conductor Resistance (M?/m) at 30¡C
+rf.to_csv('resistance_updated.csv', index=False)
 
 
-def result(Conti, C_ContR):
+def resc_result(Conti, C_ContR):
     if C_ContR <= 1:
         if Conti == "Yes":
             return "Pass"
@@ -66,17 +49,17 @@ def result(Conti, C_ContR):
             return "Fail"
 
 
-def rang(length):
-    res = []
-    for row in range(length):
-        Conti_val = Conti.iloc[row, 0]
-        C_ContR_val = C_ContR.iloc[row, 0]
-        res.append(result(Conti_val, C_ContR_val))
-    return res
+def resc_rang(rf):
+    res5 = []
+    for row in range(0, len(rf)):
+        Conti = rf.iloc[row]['Is Continuity found?']
+        C_ContR = rf.iloc[row]['Corrected Continuity Resistance (Ω)']
+        res5.append(resc_result(Conti, C_ContR))
+    return res5
 
 
-def create_table(df, doc):
-    table_data = df.iloc[:, 0:]
+def resc_table(rf, doc):
+    table_data = rf.iloc[:, 0:]
     num_rows, num_cols = table_data.shape
     table = doc.add_table(rows=num_rows + 1, cols=num_cols + 1)
     table.style = "Table Grid"
@@ -93,7 +76,8 @@ def create_table(df, doc):
         8: 0.71,
         9: 0.43,
         10: 0.56,
-        11: 0.56,  # Add this line
+        11: 0.56, 
+        12:0.5   # Add this line
     }
     for j, col in enumerate(table_data.columns):
         table.cell(0, j).text = col
@@ -101,7 +85,7 @@ def create_table(df, doc):
     for i, row in enumerate(table_data.itertuples(), start=1):
         for j, value in enumerate(row[1:], start=0):
             table.cell(i, j).text = str(value)
-    Results = rang(num_rows)
+    Results = resc_rang(rf)
     table.cell(0, num_cols).text = "Result"
     table.cell(0, num_cols).width = Inches(0.8)
     for i in range(num_rows):
@@ -117,54 +101,42 @@ def create_table(df, doc):
     return doc
 
 
-def bar_graph(df):
-    x = df["Conductor Type"]
-    y = df["Conductor Temperature (°C)"]
+def resc_graph(rf):
+    x = rf["Conductor Type"]
+    y = rf["Corrected Continuity Resistance (Ω)"]
     plt.bar(x, y)
     plt.xlabel("Conductor Type")
-    plt.ylabel(" Corrected Continuity Resistance")
+    plt.ylabel("Corrected Continuity Resistance")
     plt.title("Conductor Type VS Corrected Continuity Resistance")
-    plt.savefig("bar_graph.png")
-    graph = io.BytesIO()
-    plt.savefig(graph)
+    graph8= io.BytesIO()
+    plt.savefig(graph8)
     plt.close()
-    return graph
-
-# def bar_graph(df):
-#     fig, ax = plt.subplots()
-#     ax.bar(df['Conductor Type'], df['Corrected Continuity Resistance (Ω)'])
-#     ax.set_xlabel('Conductor Type')
-#     ax.set_ylabel('Corrected Continuity Resistance')
-#     ax.set_title('Conductor Type VS Corrected Continuity Resistance')
-#     return fig
+    return graph8
 
 
-
-def pie_diagram(df):
-    df['Result'] = rang(df.shape[0])
-    df_counts = df['Result'].value_counts()
-    labels = df_counts.index.tolist()
-    values = df_counts.values.tolist()
+def resc_pie(rf):
+    rf['Result'] = resc_rang(rf)
+    rf_counts = rf['Result'].value_counts()
+    labels = rf_counts.index.tolist()
+    values = rf_counts.values.tolist()
 
     plt.pie(values, labels=labels, autopct='%1.1f%%', startangle=90)
     plt.axis('equal')
     plt.title('Test Results')
-    plt.savefig('pie_chart.png')
-    graph = io.BytesIO()
-    plt.savefig(graph)
+    graph9 = io.BytesIO()
+    plt.savefig(graph9)
     plt.close()
-    return graph
+    return graph9
 
 
 def main():
-    df = pd.read_csv("tuesday_updated.csv")
     doc = Document()
     doc.add_heading('RESISTANCE CONDUCTOR TEST', 0)
-    doc = create_table(df, doc)
-    bar_chart = bar_graph(df)
-    doc.add_picture(bar_chart, width=Inches(5), height=Inches(3))
-    pie_diag = pie_diagram(df)
-    doc.add_picture(pie_diag, width=Inches(5), height=Inches(3))
+    doc = resc_table(rf, doc)
+    bar_resc = resc_graph(rf)
+    doc.add_picture(bar_resc, width=Inches(5), height=Inches(3))
+    pie_resc= resc_pie(rf)
+    doc.add_picture(pie_resc, width=Inches(5), height=Inches(3))
     doc.save("resfinal.docx")
 
 
