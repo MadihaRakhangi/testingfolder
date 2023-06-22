@@ -562,79 +562,7 @@ def polarity_table(af, doc):                                              #creat
     return doc
 
 
-<<<<<<< HEAD
 def voltage_table(vf, doc):                                                                      #creates the voltage table with  result coloumn
-=======
-# def voltage_table(vf, doc):
-#     table_data = vf.iloc[:, 0:]
-#     num_rows, num_cols = table_data.shape
-#     table = doc.add_table(rows=num_rows + 1, cols=num_cols + 1)
-#     table.style = "Table Grid"
-#     table.autofit = False
-#     column_widths = {
-#         0: 0.2,
-#         1: 0.51,
-#         2: 0.55,
-#         3: 0.54,
-#         4: 0.38,
-#         5: 0.56,
-#         6: 0.5,
-#         7: 0.48,
-#         8: 0.71,
-#         9: 0.43,
-#         10: 0.56,
-#         11: 0.56,
-#         12: 0.5,
-#     }
-#     for j, col in enumerate(table_data.columns):
-#         table.cell(0, j).text = col
-#         table.cell(0, j).width = Inches(column_widths[j])
-#     first_row_cells = table.rows[0].cells
-#     for cell in first_row_cells:
-#         cell_elem = cell._element
-#         tc_pr = cell_elem.get_or_add_tcPr()
-#         shading_elem = parse_xml(
-#             f'<w:shd {nsdecls("w")} w:fill="d9ead3"/>'
-#         )
-#         tc_pr.append(shading_elem)
-#     for i, row in enumerate(table_data.itertuples(), start=1):
-#         for j, value in enumerate(row[1:], start=0):
-#             cell = table.cell(i, j)
-#             cell.text = str(value)
-#             if j == num_cols - 1:  # Apply background color only to the Result column
-#                 result_cell = cell
-#                 if value == "Pass"  or "pass":
-#                     shading_elm = parse_xml(
-#                         r'<w:shd {} w:fill="00FF00"/>'.format(nsdecls('w'))
-#                     )  # Green color
-#                     result_cell._tc.get_or_add_tcPr().append(shading_elm)
-#                 elif value == "Fail":
-#                     shading_elm = parse_xml(
-#                         r'<w:shd {} w:fill="FF0000"/>'.format(nsdecls('w'))
-#                     )  # Red color
-#                     result_cell._tc.get_or_add_tcPr().append(shading_elm)
-
-#     # for i, row in enumerate(table_data.itertuples(), start=1):
-#     #     for j, value in enumerate(row[1:], start=0):
-#     #         table.cell(i, j).text = str(value)
-    
-#     table.cell(0, num_cols).text = "Result"
-#     table.cell(0, num_cols).width = Inches(0.8)
-#     for i in range(num_rows):
-#         res_index = i
-#         Results = voltage_rang(num_rows)
-#         table.cell(i + 1, num_cols).text = Results[res_index]
-#     font_size = 7
-
-#     for row in table.rows:
-#         for cell in row.cells:
-#             for paragraph in cell.paragraphs:
-#                 for run in paragraph.runs:
-#                     run.font.size = Pt(font_size)
-#     return doc
-
-def voltage_table(vf, doc):
->>>>>>> 18a047e2e483063ed7d0540847bbb3797d0960c6
     table_data = vf.iloc[:, 0:]
     num_rows, num_cols = table_data.shape
     table = doc.add_table(rows=num_rows + 1, cols=num_cols + 1)
@@ -662,26 +590,18 @@ def voltage_table(vf, doc):
     for cell in first_row_cells:
         cell_elem = cell._element
         tc_pr = cell_elem.get_or_add_tcPr()
-        shading_elem = parse_xml(f'<w:shd {nsdecls("w")} w:fill="d9ead3"/>')
+        shading_elem = parse_xml(
+            f'<w:shd {nsdecls("w")} w:fill="d9ead3"/>'
+        )
         tc_pr.append(shading_elem)
     for i, row in enumerate(table_data.itertuples(), start=1):
         for j, value in enumerate(row[1:], start=0):
-            cell = table.cell(i, j)
-            cell.text = str(value)
-            if j == num_cols - 1:  # Apply background color only to the Result column
-                result_cell = cell
-                if value == "pass":
-                    shading_elm = parse_xml(r'<w:shd {} w:fill="00FF00"/>'.format(nsdecls('w')))  # Green color
-                    result_cell._element.get_or_add_tcPr().append(shading_elm)
-                elif value == "fail":
-                    shading_elm = parse_xml(r'<w:shd {} w:fill="FF0000"/>'.format(nsdecls('w')))  # Red color
-                    result_cell._element.get_or_add_tcPr().append(shading_elm)
-
+            table.cell(i, j).text = str(value)
+    Results = voltage_rang(num_rows)
     table.cell(0, num_cols).text = "Result"
     table.cell(0, num_cols).width = Inches(0.8)
     for i in range(num_rows):
         res_index = i
-        Results = voltage_rang(num_rows)  # Update this line with the correct logic for obtaining the results
         table.cell(i + 1, num_cols).text = Results[res_index]
     font_size = 7
 
@@ -748,29 +668,9 @@ def residual_table(rf, doc):                                                    
             f'<w:shd {nsdecls("w")} w:fill="d9ead3"/>'
         )
         tc_pr.append(shading_elem)
-    # for i, row in enumerate(table_data.itertuples(), start=1):
-    #     for j, value in enumerate(row[1:], start=0):
-    #         table.cell(i, j).text = str(value)
-            
-
-    
     for i, row in enumerate(table_data.itertuples(), start=1):
         for j, value in enumerate(row[1:], start=0):
-            cell = table.cell(i, j)
-            cell.text = str(value)
-            if j == num_cols - 1:  # Apply background color only to the Result column
-                result_cell = cell
-                if value == "Pass":
-                    shading_elm = parse_xml(
-                        r'<w:shd {} w:fill="00FF00"/>'.format(nsdecls('w'))
-                    )  # Green color
-                    result_cell._tc.get_or_add_tcPr().append(shading_elm)
-                elif value == "Fail":
-                    shading_elm = parse_xml(
-                        r'<w:shd {} w:fill="FF0000"/>'.format(nsdecls('w'))
-                    )  # Red color
-                    result_cell._tc.get_or_add_tcPr().append(shading_elm)
-
+            table.cell(i, j).text = str(value)
 
     font_size = 5
     for row in table.rows:
@@ -1243,9 +1143,9 @@ def main():
     graph = threephase_graph(tf)                                                                                                         # Generate a graph of three-phase symmetry data
     doc.add_picture(graph)                                                                                                                # Add the three-phase symmetry graph to the document
     pie = threephase_pie(tf)                                                                                                                # Generate a pie chart of three-phase symmetry data
-    doc.add_picture(pie)                                                                                                                 # Add the three-phase symmetry pie chart to the document
+    doc.add_picture(pie)                                                                                                                # Add the three-phase symmetry pie chart to the document
 
-    doc.save("scriptreport.docx")                                                                                                        # Save the Word document with all the added content
+    doc.save("scriptreport.docx")                                                                                                      # Save the Word document with all the added content
 
    
 
