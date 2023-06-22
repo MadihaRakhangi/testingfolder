@@ -16,7 +16,7 @@ from docx.shared import RGBColor
 from docx.oxml.ns import nsdecls
 from docx.oxml import parse_xml
 
-A = "floor.csv"                                                              
+A = "floor.csv"                                                                   #all the csv files mentioned                                                 
 df = pd.read_csv(A)
 B = "Insulate.csv"
 mf = pd.read_csv(B)
@@ -36,21 +36,12 @@ I="threephasevalue.csv"
 tf2=pd.read_csv("threephasevalue.csv")
 
 
-df["Applied Test Voltage (V)"] = pd.to_numeric(df["Applied Test Voltage (V)"], errors="coerce")
-df["Measured Output Current (mA)"] = pd.to_numeric(
-    df["Measured Output Current (mA)"], errors="coerce"
-)
-
-df["EffectiveResistance"] = df["Applied Test Voltage (V)"] / df["Measured Output Current (mA)"]
+df["EffectiveResistance"] = df["Applied Test Voltage (V)"] / df["Measured Output Current (mA)"]          #floor resistance calculation      
 df.to_csv("floorfinal.csv", index=False)
 
 
-vf["Calculated Voltage Drop (V)"] = (
-    vf["Measured Voltage (V, L-N)[FROM]"] - vf["Measured Voltage (V, L-N)[TO]"]
-)
-vf["Voltage Drop %"] = (
-    vf["Calculated Voltage Drop (V)"] / vf["Measured Voltage (V, L-N)[FROM]"]
-) * 100
+vf["Calculated Voltage Drop (V)"] = (vf["Measured Voltage (V, L-N)[FROM]"] - vf["Measured Voltage (V, L-N)[TO]"])        #voltage drop calculation
+vf["Voltage Drop %"] = (vf["Calculated Voltage Drop (V)"] / vf["Measured Voltage (V, L-N)[FROM]"]) * 100
 vf["Voltage Drop %"] = vf["Voltage Drop %"].round(decimals=2)
 vf.to_csv("voltage_upd.csv", index=False)
 
@@ -60,7 +51,7 @@ lim3 = 6
 lim4 = 8
 
 
-def resistanceresult(Nom_EVolt, ATV, Eff_Floor, Dist_loc):
+def resistance_result(Nom_EVolt, ATV, Eff_Floor, Dist_loc):                                                     #floor and wall resistance result condition
     if Nom_EVolt <= 500 and Dist_loc >= 1:
         if ATV == Nom_EVolt and Eff_Floor >= 50:
             return "Pass"
@@ -77,7 +68,7 @@ def resistanceresult(Nom_EVolt, ATV, Eff_Floor, Dist_loc):
         return "Invalid input"
 
 
-def insulateresult(Nom_CVolt, T_Volt, Insu_R):
+def insulate_result(Nom_CVolt, T_Volt, Insu_R):                                                                  #insulation result condition
     if Nom_CVolt <= 50:
         if Insu_R >= 0.5 and T_Volt == 250:
             return "Pass"
@@ -97,21 +88,21 @@ def insulateresult(Nom_CVolt, T_Volt, Insu_R):
         return "Invalid input"
 
 
-def phase_result(phase_seq):
+def phase_result(phase_seq):                                                                          #phase sequence result condition
     if phase_seq == "RYB":
         return "CLOCKWISE"
     else:
         return "ANTICLOCKWISE"
 
 
-def polarity_result(line_neutral):
+def polarity_result(line_neutral):                                                                      #polarity result condition
     if line_neutral == 230:
         return "OK"
     else:
         return "REVERSE"
 
 
-def voltage_result(VD, Type_ISS, PoS, Dist):
+def voltage_result(VD, Type_ISS, PoS, Dist):                                                             #voltage drop result condition
     if Dist <= 0:
         if VD <= lim1:
             if Type_ISS == "Public" and PoS == "Lighting":
@@ -185,7 +176,7 @@ def voltage_result(VD, Type_ISS, PoS, Dist):
             return "Fail"
 
 
-def Resi_result(Type, Test_Current, Rated_OpCurrent, D_Tripped, Trip_Time):
+def resi_result(Type, Test_Current, Rated_OpCurrent, D_Tripped, Trip_Time):                                    #residual test result condition
     if Type == "AC":
         if Test_Current == 0.5 * Rated_OpCurrent:
                 if D_Tripped == "No":
@@ -236,7 +227,7 @@ def Resi_result(Type, Test_Current, Rated_OpCurrent, D_Tripped, Trip_Time):
         return "Pass"
 
 
-def Earth_result(Elec_DistRatio, Mea_EarthResist):
+def earth_result(Elec_DistRatio, Mea_EarthResist):                                                      #earth residual test condition
     if Mea_EarthResist <= 2 and Elec_DistRatio >= 1:
         return "PASS - Test Electrodes are properly placed"
     elif Mea_EarthResist <= 2 and Elec_DistRatio < 1:
@@ -248,7 +239,7 @@ def Earth_result(Elec_DistRatio, Mea_EarthResist):
     else:
         return "Invalid"
     
-def threephase_result(tf, tf2):
+def threephase_result(tf, tf2):                                                                             #three phase symmetry result condition
     tf["Rated Line Voltage (V)"] = tf2["Rated Line Voltage (V)"]
     tf["Average Line Voltage (V)"] = round(
         (tf2["Voltage-L1L2 (V)"] + tf2["Voltage-L2L3 (V)"] + tf2["Voltage-L3L1 (V)"]) / 3, 2
@@ -302,29 +293,29 @@ def threephase_result(tf, tf2):
     return tf
 
 
-def resistancerang(length):
+def resistance_rang(length):                                                                     #gives  floor and wall resistance result coloumn
     res1 = []
     for row in range(length):
         Nom_EVolt = df.iloc[row, 5]
         Dist_loc = df.iloc[row, 4]
         ATV = df.iloc[row, 6]
         Eff_Floor = df.iloc[row, 8]
-        res1.append(resistanceresult(Nom_EVolt, ATV, Eff_Floor, Dist_loc))
+        res1.append(resistance_result(Nom_EVolt, ATV, Eff_Floor, Dist_loc))
     return res1
 
 
-def insulationrang(length):
+def insulation_rang(length):                                                                   #gives insulation result coloumn
     res2 = []
     for row in range(length):  # Adjusted the range to start from 0
         Nom_CVolt = mf.iloc[row, 7]
         T_Volt = mf.iloc[row, 9]
         Insu_R = mf.iloc[row, 13]
-        res2.append(insulateresult(Nom_CVolt, T_Volt, Insu_R))
+        res2.append(insulate_result(Nom_CVolt, T_Volt, Insu_R))
         print(Nom_CVolt)
     return res2
 
 
-def phaserang(pf):
+def phase_rang(pf):                                                                              #gives phase sequence result coloumn
     res3 = []
     phase_seqs = pf["Phase Sequence"]
     for seq in phase_seqs:
@@ -337,7 +328,7 @@ def phaserang(pf):
     return res3
 
 
-def polarityrang(length):
+def polarity_rang(length):                                                                         #gives polarity result coloumn
     res4 = []
     for row in range(0, length):
         line_neutral = af.iloc[row, 5]
@@ -345,7 +336,7 @@ def polarityrang(length):
     return res4
 
 
-def voltage_rang(length):
+def voltage_rang(length):                                                                         #gives voltage result coloumn
     res = []
     for row in range(0, length):
         VD_val = vf.iloc[row, 12]
@@ -356,7 +347,7 @@ def voltage_rang(length):
     return res
 
 
-def resistance_table(df, doc):
+def resistance_table(df, doc):                                                                      #creates the floor and wall resistance table with  result coloumn
     table_data = df.iloc[:, :]
     num_rows, num_cols = table_data.shape
     table = doc.add_table(rows=num_rows + 1, cols=num_cols + 1)
@@ -395,7 +386,7 @@ def resistance_table(df, doc):
                 value = "{:.2f}".format(value)
             table.cell(i, j).text = str(value)
 
-    Results = resistancerang(num_rows)
+    Results = resistance_rang(num_rows)
     table.cell(0, num_cols).text = "Result"
     table.cell(0, num_cols).width = Inches(0.6)
     for i in range(num_rows):
@@ -412,7 +403,7 @@ def resistance_table(df, doc):
     return doc
 
 
-def insulation_table(df, doc):
+def insulation_table(df, doc):                                                                #creates the insulation table with  result coloumn
     table_data = df.iloc[:, 0:]
     num_rows, num_cols = table_data.shape
     table = doc.add_table(rows=num_rows + 1, cols=num_cols + 1)  # Add +1 for the "Result" column
@@ -449,7 +440,7 @@ def insulation_table(df, doc):
     for i, row in enumerate(table_data.itertuples(), start=1):
         for j, value in enumerate(row[1:], start=0):
             table.cell(i, j).text = str(value)
-    Results = insulationrang(num_rows)
+    Results = insulation_rang(num_rows)
     table.cell(0, num_cols).text = "Result"
     table.cell(0, num_cols).width = Inches(
         column_widths[num_cols]
@@ -472,7 +463,7 @@ def insulation_table(df, doc):
     return doc
 
 
-def phase_table(df, doc):
+def phase_table(df, doc):                                                                                #creates the phase sequence table with  result coloumn
     table_data = df.iloc[:, :]
     num_rows, num_cols = table_data.shape
     table = doc.add_table(rows=num_rows + 1, cols=num_cols + 1)
@@ -508,7 +499,7 @@ def phase_table(df, doc):
     for i, row in enumerate(table_data.itertuples(), start=0):
         for j, value in enumerate(row[1:], start=0):
             table.cell(i + 1, j).text = str(value)
-    results = phaserang(pf)
+    results = phase_rang(pf)
 
     table.cell(0, num_cols).text = "Result"
     for i, result in enumerate(results, start=1):
@@ -524,7 +515,7 @@ def phase_table(df, doc):
     return doc
 
 
-def polarity_table(af, doc):
+def polarity_table(af, doc):                                              #creates the polairty table with  result coloumn
     table_data = af.iloc[:, 0:]
     num_rows, num_cols = table_data.shape
     table = doc.add_table(rows=num_rows + 1, cols=num_cols + 1)
@@ -555,7 +546,7 @@ def polarity_table(af, doc):
     for i, row in enumerate(table_data.itertuples(), start=1):
         for j, value in enumerate(row[1:], start=0):
             table.cell(i, j).text = str(value)
-    Results = polarityrang(num_rows)
+    Results = polarity_rang(num_rows)
     table.cell(0, num_cols).text = "Result"
     table.cell(0, num_cols).width = Inches(0.8)
     for i in range(num_rows):
@@ -571,7 +562,7 @@ def polarity_table(af, doc):
     return doc
 
 
-def voltage_table(vf, doc):
+def voltage_table(vf, doc):                                                                      #creates the voltage table with  result coloumn
     table_data = vf.iloc[:, 0:]
     num_rows, num_cols = table_data.shape
     table = doc.add_table(rows=num_rows + 1, cols=num_cols + 1)
@@ -622,13 +613,13 @@ def voltage_table(vf, doc):
     return doc
 
 
-def resi_table(rf, doc):
+def residual_table(rf, doc):                                                             #creates the residual  table with  result coloumn
     rf["Result"] = np.NaN
     for index, row in rf.iterrows():
         trip_time_str = row["Trip Time (ms)"]
         if trip_time_str.isnumeric():
             trip_time = int(trip_time_str)
-            result_val = Resi_result(
+            result_val = resi_result(
                 row["Type"],
                 row["Test Current (mA)"],
                 row["Rated Residual Operating Current,I?n (mA)"],
@@ -690,7 +681,7 @@ def resi_table(rf, doc):
     return doc
 
 
-def Earth_table(ef, doc):
+def earthpit_table(ef, doc):                                                                      #creates the earthpit table with  result coloumn
     ef["Electrode Distance Ratio"] = round(
         ef["Nearest Electrode Distance"] / ef["Earth Electrode Depth"], 2
     )
@@ -699,7 +690,7 @@ def Earth_table(ef, doc):
     )
 
     ef["Result"] = ef.apply(
-        lambda row: Earth_result(
+        lambda row: earth_result(
             row["Electrode Distance Ratio"], row["Measured Earth Resistance - Individual"]
         ),
         axis=1,
@@ -751,7 +742,7 @@ def Earth_table(ef, doc):
 
     return doc
 
-def threephase_table(tf, doc):
+def threephase_table(tf, doc):                                                                 #creates the three phase table with  result coloumn
     table_data = tf.values
     num_rows, num_cols = table_data.shape
     table = doc.add_table(rows=num_rows + 1, cols=num_cols)
@@ -794,10 +785,10 @@ def threephase_table(tf, doc):
 
 
 
-def resistance_graph(df):
+def resistance_graph(df):                                                       #produces  bar graph for floor resistance 
     x = df["Location"]
     y = df["Measured Output Current (mA)"]
-    colors = ["#00FF00", "#FF0000","#0000FF"]  # Add more colors if needed
+    colors = ["#00FF00", "#FF0000","#0000FF"]                                    # Add more colors if needed
     plt.bar(x, y, color=colors)
     plt.xlabel("Location")
     plt.ylabel("Measured Output Current (mA)")
@@ -808,11 +799,10 @@ def resistance_graph(df):
     return graph1
 
 
-def insulation_graph(mf):
+def insulation_graph(mf):                                                               #produces  bar graph for insulation
     x = mf["Location"]
     y = mf["Nominal Circuit Voltage"]
-    colors = ["#00FF00", "#FF0000", "#0000FF", "#FFFF00"]  # Add more colors if needed
-
+    colors = ["#00FF00", "#FF0000", "#0000FF", "#FFFF00"]                                   # Add more colors if needed
     plt.bar(x, y, color=colors)
     plt.xlabel("Location")
     plt.ylabel("Nominal Circuit Voltage")
@@ -824,10 +814,10 @@ def insulation_graph(mf):
     return graph2
 
 
-def phase_graph(df):
+def phase_graph(df):                                                                     #produces  bar graph for phase sequence
     x = df["Phase Sequence"]
     y = df["V-L3-N"]
-    colors = ["#00FF00", "#FF0000", "#0000FF", "#FFFF00"]  # Add more colors if needed
+    colors = ["#00FF00", "#FF0000", "#0000FF", "#FFFF00"]                                # Add more colors if needed
 
     plt.bar(x, y, color=colors)
     plt.xlabel("Phase Sequence")
@@ -839,11 +829,10 @@ def phase_graph(df):
     return graph4
 
 
-def polarity_graph(af):
+def polarity_graph(af):                                                                           #produces  bar graph for polarity                                                           
     x = af["Type of Supply"]
     y = af["Line to Neutral Voltage (V)"]
-    colors = ["#00FF00", "#FF0000", "#0000FF", "#FFFF00"]  # Add more colors if needed
-
+    colors = ["#00FF00", "#FF0000", "#0000FF", "#FFFF00"]                                          # Add more colors if needed
     plt.bar(x, y, color=colors)
     plt.xlabel("Type of Supply")
     plt.ylabel("Line to Neutral Voltage (V)")
@@ -854,11 +843,10 @@ def polarity_graph(af):
     return graph7
 
 
-def voltage_graph(vf):
+def voltage_graph(vf):                                                                                           #produces  bar graph for voltage  
     x = vf["Voltage Drop %"]
     y = vf["Calculated Voltage Drop (V)"]
-    colors = ["#00FF00", "#FF0000", "#0000FF", "#FFFF00"]  # Add more colors if needed
-
+    colors = ["#00FF00", "#FF0000", "#0000FF", "#FFFF00"]                                                            # Add more colors if needed
     plt.bar(x, y, color=colors)
     plt.xlabel("Voltage Drop %")
     plt.ylabel("Calculated Voltage Drop (V)")
@@ -869,9 +857,9 @@ def voltage_graph(vf):
     return graph
 
 
-def Resi_graph(rf):
+def residual_graph(rf):                                                                                             #produces  bar graph for residual 
     result_counts = rf["Result"].value_counts()
-    colors = ["#00FF00", "#FF0000", "#0000FF", "#FFFF00"]  # Add more colors if needed
+    colors = ["#00FF00", "#FF0000", "#0000FF", "#FFFF00"]                                                             # Add more colors if needed
     plt.bar(result_counts.index, result_counts.values,color=colors)
     plt.xlabel("Result")
     plt.ylabel("Count")
@@ -909,7 +897,7 @@ def threephase_graph(tf):
 
 
 def resistance_pie(df):
-    df["Result"] = resistancerang(df.shape[0])
+    df["Result"] = resistance_rang(df.shape[0])
     df_counts = df["Result"].value_counts()
     labels = df_counts.index.tolist()
     values = df_counts.values.tolist()
@@ -936,7 +924,7 @@ def insulation_pie(mf):
 
 
 def phase_pie(pf):
-    pf["Result"] = phaserang(pf)
+    pf["Result"] = phase_rang(pf)
     pf_counts = pf["Result"].value_counts()
     labels = pf_counts.index.tolist()
     values = pf_counts.values.tolist()
@@ -951,7 +939,7 @@ def phase_pie(pf):
 
 
 def polarity_pie(af):
-    af["Result"] = polarityrang(af.shape[0])
+    af["Result"] = polarity_rang(af.shape[0])
     af_counts = af["Result"].value_counts()
     labels = af_counts.index.tolist()
     values = af_counts.values.tolist()
@@ -988,7 +976,7 @@ def resi_pie(rf):
     colors = ["#00FF00", "#FF0000"]
     plt.pie(values, labels=labels, autopct="%1.1f%%", shadow=False, startangle=90,colors=colors)
     plt.title("Residual Test Results")
-    plt.axis("equal")  # Equal aspect ratio ensures that the pie is drawn as a circle
+    plt.axis("equal")                                                                     # Equal aspect ratio ensures that the pie is drawn as a circle
     graph = io.BytesIO()
     plt.savefig(graph)
     plt.close()
@@ -1002,7 +990,7 @@ def earth_pie(rf):
     colors = ["#00FF00", "#FF0000"]
     plt.pie(values, labels=labels, autopct="%1.1f%%", shadow=False, startangle=90,colors=colors)
     plt.title("Earth Pit Electrode Test Results")
-    plt.axis("equal")  # Equal aspect ratio ensures that the pie is drawn as a circle
+    plt.axis("equal")                                                                    # Equal aspect ratio ensures that the pie is drawn as a circle
     graph = io.BytesIO()
     plt.savefig(graph)
     plt.close()
@@ -1017,7 +1005,7 @@ def threephase_pie(tf):
 
     plt.pie(values, labels=labels, colors=colors, autopct='%1.1f%%', startangle=90)
     plt.title("Three Phase Symmetry Test Results")
-    plt.axis('equal')  # Equal aspect ratio ensures that the pie is drawn as a circle
+    plt.axis('equal')                                                                 # Equal aspect ratio ensures that the pie is drawn as a circle
     graph = io.BytesIO()
     plt.savefig(graph)
     plt.close()
@@ -1066,19 +1054,16 @@ def main():
     section = doc.sections[0]
     header = section.header
 
-    # Create a table with two cells for the pictures
-    htable = header.add_table(1, 2, width=Inches(6))
 
-    # Configure the table properties
-    htable.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+    htable = header.add_table(1, 2, width=Inches(6))                                                  # Create a table with two cells for the pictures
+    htable.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER                                                   # Configure the table properties
     htable.autofit = False
 
-    # Get the first cell in the table
-    cell1 = htable.cell(0, 0)
-    cell1.width = Inches(4)  # Adjust the width of the first cell
+   
+    cell1 = htable.cell(0, 0)                                                                        # Get the first cell in the table
+    cell1.width = Inches(4)                                                                        # Adjust the width of the first cell
 
-    # Add the first picture to the first cell
-    left_header_image_path = "efficienergy-logo.jpg"  # Replace with the actual image file path
+    left_header_image_path = "efficienergy-logo.jpg"                                                # Add the first picture to the first cell
     cell1_paragraph = cell1.paragraphs[0]
     cell1_paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT
     cell1_run = cell1_paragraph.add_run()
@@ -1086,10 +1071,10 @@ def main():
 
     # Get the second cell in the table
     cell2 = htable.cell(0, 1)
-    cell2.width = Inches(4)  # Adjust the width of the second cell
+    cell2.width = Inches(4)                                                                     # Adjust the width of the second cell
 
     # Add the second picture to the second cell
-    right_header_image_path = "secqr logo.png"  # Replace with the actual image file path
+    right_header_image_path = "secqr logo.png"                                              # Replace with the actual image file path
     cell2_paragraph = cell2.paragraphs[0]
     cell2_paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.RIGHT
     cell2_run = cell2_paragraph.add_run()
@@ -1099,73 +1084,69 @@ def main():
     footer_paragraph = footer.paragraphs[0]
     footer_paragraph.text = "This Report is the Intellectual Property of M/s Efficienergi Consulting Pvt. Ltd. Plagiarism in Part or Full will be considered as theft of Intellectual property. The Information in this Report is to be treated as Confidential."
     for run in footer_paragraph.runs:
-        run.font.name = "Calibri"  # Replace with the desired font name
-        run.font.size = Pt(7)  # Replace with the desired font size
-
+        run.font.name = "Calibri"                                                          # Replace with the desired font name
+        run.font.size = Pt(7)                                                              # Replace with the desired font size
 
     doc.add_paragraph("FLOOR-RESISTANCE TEST")
-    doc = resistance_table(df, doc)
-    graph_resistance = resistance_graph(df)
-    doc.add_picture(graph_resistance)
-    pie_resistance = resistance_pie(df)
-    doc.add_picture(pie_resistance)
-
+    doc = resistance_table(df, doc)                                                                      # Add a table of resistance data to the document
+    graph_resistance = resistance_graph(df)                                                              # Generate a graph of resistance data
+    doc.add_picture(graph_resistance)                                                                    # Add the resistance graph to the document
+    pie_resistance = resistance_pie(df)                                                                   # Generate a pie chart of resistance data
+    doc.add_picture(pie_resistance)                                                                       # Add the resistance pie chart to the document
 
     doc.add_paragraph("INSULATION TEST")
-    doc = insulation_table(mf, doc)
-    graph_insulation = insulation_graph(mf)
-    doc.add_picture(graph_insulation, width=Inches(5), height=Inches(3))
-    pie_insulation = insulation_pie(mf)
-    doc.add_picture(pie_insulation, width=Inches(5), height=Inches(3))
+    doc = insulation_table(mf, doc)                                                                             # Add a table of insulation data to the document
+    graph_insulation = insulation_graph(mf)                                                                         # Generate a graph of insulation data
+    doc.add_picture(graph_insulation, width=Inches(5), height=Inches(3))                                              # Add the insulation graph to the document
+    pie_insulation = insulation_pie(mf)                                                                                          # Generate a pie chart of insulation data
+    doc.add_picture(pie_insulation, width=Inches(5), height=Inches(3))                                                        # Add the insulation pie chart to the document
 
-    
     doc.add_paragraph("PHASE SEQUENCE TEST")
-    doc = phase_table(pf, doc)
-    graph_phase = phase_graph(pf)
-    doc.add_picture(graph_phase, width=Inches(5), height=Inches(3))
-    pie_phase = phase_pie(pf)
-    doc.add_picture(pie_phase, width=Inches(5), height=Inches(3))
+    doc = phase_table(pf, doc)                                                                                                                     # Add a table of phase sequence data to the document
+    graph_phase = phase_graph(pf)                                                                                                                 # Generate a graph of phase sequence data
+    doc.add_picture(graph_phase, width=Inches(5), height=Inches(3))                                                                                 # Add the phase sequence graph to the document
+    pie_phase = phase_pie(pf)                                                                                                                         # Generate a pie chart of phase sequence data
+    doc.add_picture(pie_phase, width=Inches(5), height=Inches(3))                                                                                       # Add the phase sequence pie chart to the document
 
-    
     doc.add_paragraph("POLARITY TEST")
-    doc = polarity_table(af, doc)
-    graph_polarity = polarity_graph(af)
-    doc.add_picture(graph_polarity, width=Inches(6))
-    pie_polarity = polarity_pie(af)
-    doc.add_picture(pie_polarity, width=Inches(5), height=Inches(3))
+    doc = polarity_table(af, doc)                                                                                                        # Add a table of polarity data to the document
+    graph_polarity = polarity_graph(af)                                                                                                       # Generate a graph of polarity data
+    doc.add_picture(graph_polarity, width=Inches(6))                                                                                                  # Add the polarity graph to the document
+    pie_polarity = polarity_pie(af)                                                                                                                      # Generate a pie chart of polarity data
+    doc.add_picture(pie_polarity, width=Inches(5), height=Inches(3))                                                                          # Add the polarity pie chart to the document
 
     doc.add_page_break()
+
     doc.add_paragraph("VOLTAGE DROP TEST")
-    doc = voltage_table(vf, doc)
-    graph_voltage = voltage_graph(vf)
-    doc.add_picture(graph_voltage, width=Inches(6))
-    pie_voltage = voltage_pie(vf)
-    doc.add_picture(pie_voltage, width=Inches(5), height=Inches(3))
+    doc = voltage_table(vf, doc)                                                                                                   # Add a table of voltage drop data to the document
+    graph_voltage = voltage_graph(vf)                                                                                                         # Generate a graph of voltage drop data
+    doc.add_picture(graph_voltage, width=Inches(6))                                                                                                # Add the voltage drop graph to the document
+    pie_voltage = voltage_pie(vf)                                                                                                       # Generate a pie chart of voltage drop data
+    doc.add_picture(pie_voltage, width=Inches(5), height=Inches(3))                                                                        # Add the voltage drop pie chart to the document
 
-    
     doc.add_paragraph("Residual Current Device Test")
-    doc = resi_table(rf, doc)
-    graph_resi = Resi_graph(rf)
-    doc.add_picture(graph_resi, width=Inches(6), height=Inches(3))
-    pie_resi = resi_pie(vf)
-    doc.add_picture(pie_resi, width=Inches(5), height=Inches(3))
-
+    doc = residual_table(rf, doc)                                                                                                     # Add a table of residual current device data to the document
+    graph_resi = residual_graph(rf)                                                                                                              # Generate a graph of residual current device data
+    doc.add_picture(graph_resi, width=Inches(6), height=Inches(3))                                                                    # Add the residual current device graph to the document
+    pie_resi = resi_pie(vf)                                                                                                           # Generate a pie chart of residual current device data
+    doc.add_picture(pie_resi, width=Inches(5), height=Inches(3))                                                                       # Add the residual current device pie chart to the document
 
     doc.add_paragraph("EARTH PIT  RESISTANCE TEST")
-    doc = Earth_table(ef, doc)
-    graph_earth = voltage_graph(vf)
-    doc.add_picture(graph_earth, width=Inches(6))
-    graph_pie = earth_pie(ef)
-    doc.add_picture(graph_pie, width=Inches(6))
+    doc = earthpit_table(ef, doc)                                                                                                        # Add a table of earth pit resistance data to the document
+    graph_earth = voltage_graph(vf)                                                                                                      # Generate a graph of earth pit resistance data
+    doc.add_picture(graph_earth, width=Inches(6))                                                                                        # Add the earth pit resistance graph to the document
+    graph_pie = earth_pie(ef)                                                                                                            # Generate a pie chart of earth pit resistance data
+    doc.add_picture(graph_pie, width=Inches(6))                                                                                          # Add the earth pit resistance pie chart to the document
 
     doc.add_paragraph("THREE PHASE SYMMETRY TEST")
-    doc = threephase_table(tf, doc)
-    graph = threephase_graph(tf)
-    doc.add_picture(graph)
-    pie=threephase_pie(tf)
-    doc.add_picture(pie)
+    doc = threephase_table(tf, doc)                                                                                                      # Add a table of three-phase symmetry data to the document
+    graph = threephase_graph(tf)                                                                                                         # Generate a graph of three-phase symmetry data
+    doc.add_picture(graph)                                                                                                                # Add the three-phase symmetry graph to the document
+    pie = threephase_pie(tf)                                                                                                                # Generate a pie chart of three-phase symmetry data
+    doc.add_picture(pie)                                                                                                                 # Add the three-phase symmetry pie chart to the document
 
-    doc.save("scriptreport.docx")
+    doc.save("scriptreport.docx")                                                                                                        # Save the Word document with all the added content
 
+   
 
 main()

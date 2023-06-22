@@ -1,3 +1,3 @@
-SN,Circuit Route[FROM],Circuit Route[TO],"Measured Voltage (V, L-N)[FROM]","Measured Voltage (V, L-N)[TO]",Nominal Circuit Voltage (V AC),Type of Installation Supply System,Purpose of Supply,Cable Length (m),Conductor Type,Insulation Type,Calculated Voltage Drop (V),Voltage Drop %
-1,Main ACB,Light,220,215,230,Public,Lighting,160,Cu,PVC,5,2.27
-2,Main ACB,Computer Station,225,201,230,Private,Other,80,Al,XLPE,24,10.67
+SN,Circuit Route[FROM],Circuit Route[TO],"Measured Voltage (V, L-N)[FROM]","Measured Voltage (V, L-N)[TO]",Nominal Circuit Voltage (V AC),Type of Installation Supply System,Purpose of Supply,Cable Length (m),Conductor Type,Insulation Type,Calculated Voltage Drop (V),Voltage Drop %,Result
+1,Main ACB,Light,220,215,230,Public,Lighting,160,Cu,PVC,5,2.27,Fail
+2,Main ACB,Computer Station,225,201,230,Private,Other,80,Al,XLPE,24,10.67,Fail
