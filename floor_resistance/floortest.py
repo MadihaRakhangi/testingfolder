@@ -11,8 +11,7 @@ from docx.shared import Pt, RGBColor
 M = "floor.csv"
 df = pd.read_csv(M)
 
-df['Applied Test Voltage (V)'] = pd.to_numeric(df['Applied Test Voltage (V)'], errors='coerce')
-df['Measured Output Current (mA)'] = pd.to_numeric(df['Measured Output Current (mA)'], errors='coerce')
+
 
 df['EffectiveResistance'] = df['Applied Test Voltage (V)'] / df['Measured Output Current (mA)']
 df.to_csv('floorfinal.csv', index=False)

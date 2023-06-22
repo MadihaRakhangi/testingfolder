@@ -96,8 +96,7 @@ def Earth_Pie(ef):
     values = result_counts.values
     colors = ["blue", "orange"]
 
-    plt.pie(values, labels=labels, colors=colors, autopct='%1.1f%%',
-            shadow=True, startangle=90)
+    plt.pie(values, labels=labels, colors=colors, autopct='%1.1f%%', startangle=90)
     plt.title("Earth Pit Electrode Test Results")
     plt.axis('equal')  # Equal aspect ratio ensures that the pie is drawn as a circle
     graph = io.BytesIO()
@@ -114,9 +113,9 @@ def main():
         section.left_margin = Inches(0.2)
     doc = Earth_create_table(ef, doc)
     graph_image = Earth_graph(ef)
-    doc.add_picture(graph_image, width=Inches(6), height=Inches(4))
+    doc.add_picture(graph_image )
     graph_image = Earth_Pie(ef)
-    doc.add_picture(graph_image, width=Inches(6), height=Inches(4))
+    doc.add_picture(graph_image)
     doc.save("Earth_Pit.docx")
 
 
