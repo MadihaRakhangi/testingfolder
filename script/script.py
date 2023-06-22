@@ -229,35 +229,17 @@ def resi_result(Type, Test_Current, Rated_OpCurrent, D_Tripped, Trip_Time):     
 
 def earth_result(Elec_DistRatio, Mea_EarthResist):                                                      #earth residual test condition
     if Mea_EarthResist <= 2 and Elec_DistRatio >= 1:
-        return "PASS"
+        return "PASS - Test Electrodes are properly placed"
     elif Mea_EarthResist <= 2 and Elec_DistRatio < 1:
-        return "PASS"
+        return "PASS - Test Electrodes are not properly placed"
     elif Mea_EarthResist > 2 and Elec_DistRatio >= 1:
-        return "FAIL"
+        return "FAIL - Test Electrodes are properly placed"
     elif Mea_EarthResist > 2 and Elec_DistRatio < 1:
-        return "FAIL"
+        return "FAIL - Test Electrodes are not properly placed"
     else:
         return "Invalid"
-<<<<<<< HEAD
-
-def Earth_remark_result(Elec_DistRatio, Mea_EarthResist):
-    if Mea_EarthResist <= 2 and Elec_DistRatio >= 1:
-        return "Test Electrodes are properly placed"
-    elif Mea_EarthResist <= 2 and Elec_DistRatio < 1:
-        return "Test Electrodes are not properly placed"
-    elif Mea_EarthResist > 2 and Elec_DistRatio >= 1:
-        return "Test Electrodes are properly placed"
-    elif Mea_EarthResist > 2 and Elec_DistRatio < 1:
-        return "Test Electrodes are not properly placed"
-    else:
-        return "Invalid"
-
-
-def threephase_result(tf, tf2):
-=======
     
 def threephase_result(tf, tf2):                                                                             #three phase symmetry result condition
->>>>>>> 5903c0997b5d41f7dc0d5be137ee3d7e202e68e6
     tf["Rated Line Voltage (V)"] = tf2["Rated Line Voltage (V)"]
     tf["Average Line Voltage (V)"] = round(
         (tf2["Voltage-L1L2 (V)"] + tf2["Voltage-L2L3 (V)"] + tf2["Voltage-L3L1 (V)"]) / 3, 2
@@ -713,12 +695,6 @@ def earthpit_table(ef, doc):                                                    
         ),
         axis=1,
     )
-    ef["Remark"] = ef.apply(
-        lambda row: Earth_remark_result(
-            row["Electrode Distance Ratio"], row["Measured Earth Resistance - Individual"]
-        ),
-        axis=1,
-    )
 
     table_data = ef.iloc[:, 0:]
     num_rows, num_cols = table_data.shape[0], table_data.shape[1]
@@ -738,8 +714,7 @@ def earthpit_table(ef, doc):                                                    
         7: 0.59,
         8: 0.37,
         9: 0.55,
-        10: 0.5,
-        11: 0.
+        10: 0.8,
     }
 
     for j, col in enumerate(table_data.columns):
