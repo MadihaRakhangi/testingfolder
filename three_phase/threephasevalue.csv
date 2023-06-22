@@ -1,0 +1,3 @@
+Rated Line Voltage (V),Voltage-L1L2 (V),Voltage-L2L3 (V),Voltage-L3L1 (V),Voltage-L1N (V),Voltage-L2N (V),Voltage-L3N (V),Rated Phase Current (A),Current-L1 (A),Current-L2 (A),Current-L3 (A),Voltage-NE (V),Zero Sum Current (mA)
+415,425,420,410,235,230,225,630,445,470,480,3,105
+450,420,420,420,252,252,252,670,553,553,553,2,150

@@ -9,13 +9,14 @@ from docx.enum.section import WD_SECTION
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 from docx.shared import Pt, RGBColor
 import numpy as np
+import datetime
 from docx.oxml.ns import nsdecls
 from docx.oxml import parse_xml
 from docx.shared import RGBColor
 from docx.oxml.ns import nsdecls
 from docx.oxml import parse_xml
 
-A = "floor.csv"
+A = "floor.csv"                                                              
 df = pd.read_csv(A)
 B = "Insulate.csv"
 mf = pd.read_csv(B)
@@ -29,6 +30,10 @@ F= "residual.csv"
 rf = pd.read_csv("residual.csv")
 G = "earthpit.csv"
 ef = pd.read_csv(G)
+H="threephase.csv"
+tf=pd.read_csv("threephase.csv")
+I="threephasevalue.csv"
+tf2=pd.read_csv("threephasevalue.csv")
 
 
 df["Applied Test Voltage (V)"] = pd.to_numeric(df["Applied Test Voltage (V)"], errors="coerce")
@@ -242,6 +247,59 @@ def Earth_result(Elec_DistRatio, Mea_EarthResist):
         return "FAIL - Test Electrodes are not properly placed"
     else:
         return "Invalid"
+    
+def threephase_result(tf, tf2):
+    tf["Rated Line Voltage (V)"] = tf2["Rated Line Voltage (V)"]
+    tf["Average Line Voltage (V)"] = round(
+        (tf2["Voltage-L1L2 (V)"] + tf2["Voltage-L2L3 (V)"] + tf2["Voltage-L3L1 (V)"]) / 3, 2
+    )
+
+    tf["Average Phase Voltage (V)"] = (
+        tf2["Voltage-L1N (V)"] + tf2["Voltage-L2N (V)"] + tf2["Voltage-L3N (V)"]
+    ) / 3
+    tf["Voltage Unbalance %"] = round(
+        (
+            (tf2["Voltage-L1N (V)"] - tf["Average Line Voltage (V)"])
+            .abs()
+            .where(
+                (tf2["Voltage-L1N (V)"] - tf["Average Line Voltage (V)"]) > 0,
+                (tf["Average Line Voltage (V)"] - tf2["Voltage-L1N (V)"]).abs(),
+            )
+            .max(axis=0)
+            / tf["Average Line Voltage (V)"]
+        )
+        * 100,
+        2,
+    )
+    tf["Voltage Result"] = np.where(tf["Voltage Unbalance %"] <= 10, "PASS", "FAIL")
+    tf["Rated Phase Current (A)"] = tf2["Rated Phase Current (A)"]
+    tf["Average Phase Current (A)"] = round(
+        (tf2["Current-L1 (A)"] + tf2["Current-L2 (A)"] + tf2["Current-L3 (A)"]) / 3, 2
+    )
+    tf["Current Unbalance %"] = round(
+        (
+            (tf2["Current-L1 (A)"] - tf["Average Phase Current (A)"])
+            .abs()
+            .where(
+                (tf2["Current-L1 (A)"] - tf["Average Phase Current (A)"]) > 0,
+                (tf["Average Phase Current (A)"] - tf2["Current-L1 (A)"]).abs(),
+            )
+            .max(axis=0)
+            / tf["Average Line Voltage (V)"]
+        )
+        * 100,
+        2,
+    )
+    tf["Current Result"] = np.where(tf["Current Unbalance %"] <= 10, "PASS", "FAIL")
+    tf["Voltage-NE (V)"] = tf2["Voltage-NE (V)"]
+    tf["NEV Result"] = np.where(tf["Voltage-NE (V)"] <= 2, "PASS", "FAIL")
+    tf["Zero Sum Current (mA)"] = tf2["Zero Sum Current (mA)"]
+    tf["ZeroSum Result"] = np.where(
+        tf["Zero Sum Current (mA)"] <= (tf["Rated Phase Current (A)"] / 5000 * 1000),
+        "PASS",
+        "FAIL",
+    )
+    return tf
 
 
 def resistancerang(length):
@@ -693,6 +751,48 @@ def Earth_table(ef, doc):
 
     return doc
 
+def threephase_table(tf, doc):
+    table_data = tf.values
+    num_rows, num_cols = table_data.shape
+    table = doc.add_table(rows=num_rows + 1, cols=num_cols)
+    table.style = "Table Grid"
+    table.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT
+    table.autofit = False
+    column_widths = {
+        0: 0.2,
+        1: 0.51,
+        2: 0.5,
+        3: 0.54,
+        4: 0.42,
+        5: 0.56,
+        6: 0.5,
+        7: 0.55,
+        8: 0.46,
+        9: 0.43,
+        10: 0.52,
+        11: 0.56,
+        12: 0.46,
+        13: 0.5,
+        14: 0.46,
+        15: 0.48,
+        16: 0.5,
+    }
+    for j, col in enumerate(tf.columns):
+        table.cell(0, j).text = col
+        table.cell(0, j).width = Inches(column_widths[j])
+    for i, row in enumerate(table_data, start=1):
+        for j, value in enumerate(row):
+            table.cell(i, j).text = str(value)
+        font_size = 6
+    for row in table.rows:
+        for cell in row.cells:
+            for paragraph in cell.paragraphs:
+                for run in paragraph.runs:
+                    run.font.size = Pt(font_size)
+    return doc
+
+
+
 
 def resistance_graph(df):
     x = df["Location"]
@@ -793,6 +893,19 @@ def Earth_graph(ef):
     plt.savefig(graph)
     plt.close()
     return graph
+
+def threephase_graph(tf):
+    result_counts = tf["ZeroSum Result"].value_counts()
+    colors = ["#00FF00", "#FF0000", "#0000FF", "#FFFF00"]
+    plt.bar(result_counts.index, result_counts.values, color=colors)
+    plt.xlabel("Result")
+    plt.ylabel("Count")
+    plt.title("Earth Pit Electrode Test Results")
+    graph = io.BytesIO()
+    plt.savefig(graph)
+    plt.close()
+    return graph
+
 
 
 def resistance_pie(df):
@@ -895,6 +1008,22 @@ def earth_pie(rf):
     plt.close()
     return graph
 
+def threephase_pie(tf):
+    plt.figure(figsize=(6, 6))
+    result_counts = tf["ZeroSum Result"].value_counts()
+    labels = result_counts.index
+    values = result_counts.values
+    colors = ["blue", "orange"]
+
+    plt.pie(values, labels=labels, colors=colors, autopct='%1.1f%%', startangle=90)
+    plt.title("Three Phase Symmetry Test Results")
+    plt.axis('equal')  # Equal aspect ratio ensures that the pie is drawn as a circle
+    graph = io.BytesIO()
+    plt.savefig(graph)
+    plt.close()
+    return graph
+
+
 
 def main():
     A = "floor.csv"
@@ -917,6 +1046,11 @@ def main():
 
     G = "earthpit.csv"
     ef = pd.read_csv(G)
+
+    H="threephase.csv"
+    tf=pd.read_csv("threephase.csv")
+    I="threephasevalue.csv"
+    tf2=pd.read_csv("threephasevalue.csv")
 
     doc = Document()
     
@@ -1000,7 +1134,7 @@ def main():
     pie_polarity = polarity_pie(af)
     doc.add_picture(pie_polarity, width=Inches(5), height=Inches(3))
 
-
+    doc.add_page_break()
     doc.add_paragraph("VOLTAGE DROP TEST")
     doc = voltage_table(vf, doc)
     graph_voltage = voltage_graph(vf)
@@ -1023,6 +1157,13 @@ def main():
     doc.add_picture(graph_earth, width=Inches(6))
     graph_pie = earth_pie(ef)
     doc.add_picture(graph_pie, width=Inches(6))
+
+    doc.add_paragraph("THREE PHASE SYMMETRY TEST")
+    doc = threephase_table(tf, doc)
+    graph = threephase_graph(tf)
+    doc.add_picture(graph)
+    pie=threephase_pie(tf)
+    doc.add_picture(pie)
 
     doc.save("scriptreport.docx")
 

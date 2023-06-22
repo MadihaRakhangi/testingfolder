@@ -1,0 +1,3 @@
+Sr. No.,Location Name,Parent Location,Facility Area,Rated Line Voltage (V),Average Line Voltage (V),Average Phase Voltage (V),Voltage Unbalance %,Voltage Result,Rated Phase Current (A),Average Phase Current (A),Current Unbalance %,Current Result,Voltage-NE (V),NEV Result,Zero Sum Current (mA),ZeroSum Result
+1,Main Incomer,MLTP,Electrical Panel Room,415,418.33,230.0,43.82,FAIL,630,465.0,4.78,PASS,3,FAIL,105,PASS
+2,Main Incomer,MLTP,Electrical Panel Room,450,420.0,252.0,43.65,FAIL,670,553.0,4.76,PASS,2,PASS,150,FAIL
