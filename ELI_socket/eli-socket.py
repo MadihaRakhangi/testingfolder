@@ -14,7 +14,7 @@ from docx.oxml.ns import nsdecls
 from docx.oxml import parse_xml
 
 sf = pd.read_csv("eli-socket.csv")
-lf = pd.read_csv("sugg-max-eli.csv")
+lf = pd.read_csv("sugg-max-eli-socket.csv")
 
 
 sf1 = sf[
@@ -34,7 +34,7 @@ sf1 = sf[
     ]
 ]
 
-df2 = sf[
+sf2 = sf[
     [
         "SN",
         "Device Name",
@@ -65,7 +65,7 @@ TMS = 1
 TDS = 1
 
 
-def IEC(df1, df2):
+def socket_result1(df1, df2):
     I = Is * ((((K * TMS) / Td) + 1) ** (1 / P))
     if row["Earthing Configuration"] == "TN":
         IEC_val_TN = row["V_LE"] / I
@@ -107,7 +107,7 @@ def IEC(df1, df2):
             result_column.append("N/A")
 
 
-def IEEE(df1, df2):
+def sokcet_result2(df1, df2):
     I = Is * (((((A / ((Td / TDS) - B)) + 1)) ** (1 / p)))
     if row["Earthing Configuration"] == "TN":
         IEEE_val_TN = row["V_LE"] / I
@@ -224,47 +224,47 @@ for index, row in sf.iterrows():
         if row[11] == "IEC Standard Inverse":
             P = 0.02
             K = 0.14
-            IEC(sf1, df2)
+            socket_result1(sf1, sf2)
         elif row[11] == "IEC Very Inverse":
             P = 1
             K = 13.5
-            IEC(sf1, df2)
+            socket_result1(sf1, sf2)
         elif row[11] == "IEC Long-Time Inverse":
             P = 1
             K = 120
-            IEC(sf1, df2)
+            socket_result1(sf1, sf2)
         elif row[11] == "IEC Extremely Inverse":
             P = 2
             K = 80
-            IEC(sf1, df2)
+            socket_result1(sf1, sf2)
         elif row[11] == "IEC Ultra Inverse":
             P = 2.5
             K = 315.2
-            IEC(sf1, df2)
+            socket_result1(sf1, sf2)
         elif row[11] == "IEEE Moderately Inverse":
             A = 0.0515
             B = 0.114
             p = 0.02
-            IEEE(sf1, df2)
+            sokcet_result2(sf1, sf2)
         elif row[11] == "IEEE Very Inverse":
             A = 19.61
             B = 0.491
             p = 2
-            IEEE(sf1, df2)
+            sokcet_result2(sf1, sf2)
         elif row[11] == "IEEE Extremely Inverse":
             A = 28.2
             B = 0.1217
             p = 2
-            IEEE(sf1, df2)
+            sokcet_result2(sf1, sf2)
 
-new_column = pd.Series(new_column[: len(df2)], name="Suggested Max ELI (Ω)")
-df2["Suggested Max ELI (Ω)"] = new_column
-df2["Suggested Max ELI (Ω)"] = df2["Suggested Max ELI (Ω)"].apply(lambda x: "{:.2f}".format(x))
-result_column = pd.Series(result_column[: len(df2)], name="Result")
-df2["Result"] = result_column
+new_column = pd.Series(new_column[: len(sf2)], name="Suggested Max ELI (Ω)")
+sf2["Suggested Max ELI (Ω)"] = new_column
+sf2["Suggested Max ELI (Ω)"] = sf2["Suggested Max ELI (Ω)"].apply(lambda x: "{:.2f}".format(x))
+result_column = pd.Series(result_column[: len(sf2)], name="Result")
+sf2["Result"] = result_column
 
 
-def create_eli_table1(df1, doc):
+def socket_table1(df1, doc):
     df1 = df1.fillna("")
     doc.add_heading("Earth Loop Impedance Test - Circuit Breaker", level=1)
     table_data = df1.iloc[:, 0:]
@@ -336,7 +336,7 @@ def create_eli_table1(df1, doc):
     return doc
 
 
-def create_eli_table2(df2, doc):
+def socket_table2(df2, doc):
     table_data = df2.iloc[:, 0:]
     table_str = tabulate(table_data, headers="keys", tablefmt="pipe")
     num_rows, num_cols = table_data.shape[0], table_data.shape[1]
@@ -409,9 +409,9 @@ def create_eli_table2(df2, doc):
 
 
 doc = Document()
-doc = create_eli_table1(sf1, doc)
+doc = socket_table1(sf1, doc)
 doc.add_paragraph("\n")
-doc = create_eli_table2(df2, doc)
-doc.save("ELI_Socket.docx")
+doc = socket_table2(sf2, doc)
+doc.save("eli_socket.docx")
 
 

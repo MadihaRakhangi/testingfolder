@@ -1,0 +1,4 @@
+SN,Device ID,Device Name,Location,Voltage Rating (V),Fuse Rating (A),Visual Inspection,Earth Continuity (?),Insulation Resistance (M?),Polarity Test,Leakage (mA),Functional Check,Overall Result
+1,A1024,Hand Drill,Workshop,240,10,OK,0.1,1,OK,0.1,OK,PASS
+2,B1024,Hot Blower,Electrical Panel Room,240,10,Not OK,0.2,2,OK,0.1,OK,FAIL
+3,C1024,Angle Grinder,Workshop,240,10,OK,0.15,2,Not OK,0.05,OK,PASS
