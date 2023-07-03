@@ -1,0 +1,3 @@
+﻿SN,Location,Parent Location,Facility Area,Device type,Functional Check,Interlock check
+1,Starter-1,Starter,Workshop,Relays,OK,OK
+2,Panel-1,Electrical Panel,Control Room,Switches,OK,Not OK

@@ -13,58 +13,8 @@ E="residual.csv"
 rf = pd.read_csv("residual.csv")
 
 
-# def Resi_result(Type, Test_Current, Rated_OpCurrent, D_Tripped, Trip_Time):
-#     if Type == "AC":
-#         if Test_Current == 0.5 * Rated_OpCurrent:
-#             if Trip_Time == "-":
-#                 if D_Tripped == "No":
-#                     return "Pass"
-#                 else:
-#                     return "Fail"
-#         elif Test_Current == 1 * Rated_OpCurrent and D_Tripped == "Yes":
-#             if Trip_Time <= 300:
-#                 return "Pass"
-#             else:
-#                 return "Fail"
-#         elif Test_Current == 2 * Rated_OpCurrent and D_Tripped == "Yes":
-#             if Trip_Time <= 150:
-#                 return "Pass"
-#             else:
-#                 return "Fail"
-#         elif Test_Current == 5 * Rated_OpCurrent and D_Tripped == "Yes":
-#             if Trip_Time <= 40:
-#                 return "Pass"
-#             else:
-#                 return "Fail"
-#         else:
-#             return "/="
-#     elif Type == "A":
-#         if Test_Current == 0.5 * Rated_OpCurrent:
-#             if D_Tripped == "No":
-#                 return "Pass"
-#             else:
-#                 return "Fail"
-#         elif Test_Current == 1 * Rated_OpCurrent and D_Tripped == "Yes":
-#             if 130 <= Trip_Time <= 500:
-#                 return "Pass"
-#             else:
-#                 return "Fail"
-#         elif Test_Current == 2 * Rated_OpCurrent and D_Tripped == "Yes":
-#             if 60 <= Trip_Time <= 200:
-#                 return "Pass"
-#             else:
-#                 return "Fail"
-#         elif Test_Current == 5 * Rated_OpCurrent and D_Tripped == "Yes":
-#             if 50 <= Trip_Time <= 150:
-#                 return "Pass"
-#             else:
-#                 return "Fail"
-#         else:
-#             return "Fail"
-#     else:
-#         return "Pass"
 
-def Resi_result(Type, Test_Current, Rated_OpCurrent, D_Tripped, Trip_Time):
+def residual_result(Type, Test_Current, Rated_OpCurrent, D_Tripped, Trip_Time):
     if Type == "AC":
         if Test_Current == 0.5 * Rated_OpCurrent:
             if D_Tripped == "No":
@@ -115,6 +65,17 @@ def Resi_result(Type, Test_Current, Rated_OpCurrent, D_Tripped, Trip_Time):
         return "Pass"
 
 
+def residual_rang(length):
+    res7 = []
+    for row in range(0, length):
+        Type= rf.iloc[row, 4]
+        Test_Current = rf.iloc[row, 11]
+        Rated_OpCurrent= rf.iloc[row, 8]
+        D_Tripped = rf.iloc[row, 14] 
+        Trip_Time = rf.iloc[row, 13]
+        res7.append(residual_result(Type, Test_Current, Rated_OpCurrent, D_Tripped, Trip_Time))
+    return res7
+
 
 def Resi_create_table(rf, doc):
     rf["Result"] = np.NaN
@@ -122,7 +83,7 @@ def Resi_create_table(rf, doc):
         trip_time_str = row["Trip Time (ms)"]
         if trip_time_str.isnumeric():
             trip_time = int(trip_time_str)
-            result_val = Resi_result(
+            result_val = residual_result(
                 row["Type"],
                 row["Test Current (mA)"],
                 row["Rated Residual Operating Current,I?n (mA)"],
@@ -175,32 +136,42 @@ def Resi_create_table(rf, doc):
                     run.font.size = Pt(font_size)
     return doc
 
+def residual_combined_graph(rf):
+    plt.figure(figsize=(16, 8))
 
-def Resi_graph(rf):
-    result_counts = rf["Result"].value_counts()
-    plt.bar(result_counts.index, result_counts.values)
-    plt.xlabel("Result")
-    plt.ylabel("Count")
+    # Bar graph
+    plt.subplot(121)
+    y= rf["Trip curve type"]
+    x = rf["No. of Poles"]
+    colors = ["#d9534f", "#5bc0de", "#5cb85c", "#428bca"]
+    plt.bar(x, y, color=colors)
+    plt.ylabel("Trip curve type")
+    plt.xlabel("No. of Poles")
     plt.title("Residual Current Device Test Results")
-    graph1 = io.BytesIO()
-    plt.savefig(graph1)
-    plt.close()
-    return graph1
 
-def Resi_Pie(rf):
-    plt.figure(figsize=(6, 6))
+    # Pie chart
+    plt.subplot(122)
+    # rf['Result'] = residual_rang(rf.shape[0])  # Ensure you have the residual_rang() function defined correctly
     result_counts = rf["Result"].value_counts()
     labels = result_counts.index
     values = result_counts.values
-    colors = ["#00FF00", "#FF0000"]
-    plt.pie(values, labels=labels, autopct="%1.1f%%", shadow=False, startangle=90,colors=colors)
+    colors = ["#5ac85a", "#dc0000"]
+    plt.pie(values, labels=labels, autopct="%1.1f%%", shadow=False, startangle=90, colors=colors)
     plt.title("Residual Test Results")
     plt.axis("equal")  # Equal aspect ratio ensures that the pie is drawn as a circle
-    graph = io.BytesIO()
-    plt.savefig(graph)
+    graph_combined = io.BytesIO()
+    plt.savefig(graph_combined)
     plt.close()
-    return graph
+
+
     
+
+    return graph_combined
+
+
+
+
+  
 def main():
     rf = pd.read_csv("residual.csv")
     doc = Document()
@@ -208,12 +179,8 @@ def main():
     for section in doc.sections:
         section.left_margin = Inches(0.2)
     doc = Resi_create_table(rf, doc)
-    
-    graph_filename = Resi_graph(rf)  # Store the graph filename
-    doc.add_picture(graph_filename, width=Inches(6), height=Inches(4))  # Add the graph to the document
-
-    graph_pie = Resi_Pie(rf)
-    doc.add_picture(graph_pie, width=Inches(6))
+    graph_combined = residual_combined_graph(rf)
+    doc.add_picture(graph_combined, width=Inches(8), height=Inches(4))
     doc.save("Residual.docx")
 
 

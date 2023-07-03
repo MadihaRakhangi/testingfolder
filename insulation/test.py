@@ -1,4 +1,6 @@
-import pandas as pd
+import re
+
+code ="""import pandas as pd
 import matplotlib.pyplot as plt
 import docx
 import csv
@@ -39,8 +41,8 @@ def insulationrang(length):
     return res2
 
 
-def insulation_table(mf, doc):
-    table_data = mf.iloc[:, 0:]
+def insulation_table(df, doc):
+    table_data = df.iloc[:, 0:]
     num_rows, num_cols = table_data.shape
     table = doc.add_table(rows=num_rows + 1, cols=num_cols + 1)  # Add +1 for the "Result" column
     table.style = "Table Grid"
@@ -84,26 +86,43 @@ def insulation_table(mf, doc):
 
     return doc
 
+import pandas as pd
+import matplotlib.pyplot as plt
+import io
 
-def insulation_graphs(mf):
+import pandas as pd
+import matplotlib.pyplot as plt
+import io
+
+import pandas as pd
+import matplotlib.pyplot as plt
+import io
+
+def insulation_graphs(df):
+    df = pd.read_csv("Insulate.csv")
+
     # Bar graph
-    x = mf["Location"]
-    y = mf["Nominal Circuit Voltage"]
+    x = df["Location"]
+    y = df["Nominal Circuit Voltage"]
 
-    plt.figure(figsize=(12, 6))  # Adjust the figsize as desired
-    colors = ["#d9534f", "#5bc0de", "#5cb85c", "#428bca"]  # Add more colors if needed
-    plt.bar(x, y, color=colors)
-    plt.xlabel("Location")
-    plt.ylabel("Nominal Circuit Voltage")
-    plt.title("Nominal Circuit Voltage by Location")
+    # Create a larger figure
+    fig = plt.figure(figsize=(12, 6))  # Adjust the figsize as desired
+    ax1 = fig.add_subplot(121)
+    colors = ["#d9534f","#5bc0de","#5cb85c","#428bca"]                                       # Add more colors if needed
+    ax1.bar(x, y, color=colors)
+    ax1.set_xlabel("Location")
+    ax1.set_ylabel("Nominal Circuit Voltage")
+    ax1.set_title("Nominal Circuit Voltage by Location")
+    
 
     # Pie chart
-    earthing_system_counts = mf["Earthing System"].value_counts()
+    earthing_system_counts = df["Earthing System"].value_counts()
+    ax2 = fig.add_subplot(122)
     colors = ["#b6d7a8", "#e06666"]
-    plt.figure(figsize=(6, 6))  # Adjust the figsize as desired
-    plt.pie(earthing_system_counts, labels=earthing_system_counts.index, autopct="%1.1f%%", colors=colors)
-    plt.title("Earthing System Distribution")
-    plt.axis("equal")
+    ax2.pie(earthing_system_counts, labels=earthing_system_counts.index, autopct="%1.1f%%", colors=colors)
+    ax2.set_title("Earthing System Distribution")
+    ax2.axis("equal")
+    
 
     graph_combined = io.BytesIO()
     plt.savefig(graph_combined)
@@ -113,16 +132,23 @@ def insulation_graphs(mf):
 
 
 
-
 def main():
-    mf = pd.read_csv("Insulate.csv")
+    df = pd.read_csv("Insulate.csv")
     doc = docx.Document()
-    doc = insulation_table(mf, doc)
+    doc = insulation_table(df, doc)
     
-    graph_combined = insulation_graphs(mf)
+    graph_combined = insulation_graphs(df)
     doc.add_picture(graph_combined,width=Inches(8), height=Inches(4)) 
   
     doc.save("outputTEST.docx")
 
 
 main()
+"""
+
+
+# Replace all occurrences of 'df' with 'mf'
+modified_code = re.sub(r'\bdf\b', 'mf', code)
+
+# Print the modified code
+print(modified_code)

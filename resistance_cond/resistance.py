@@ -7,7 +7,7 @@ from docx.shared import Inches
 from docx.shared import Pt
 
 E="resistance.csv"
-rf=pd.read_csv(E)
+jf=pd.read_csv(E)
 
 def alpha(Cond_T):                               # Function to calculate alpha value based on conductor typ      
     if Cond_T == "Al":
@@ -22,16 +22,16 @@ def alpha(Cond_T):                               # Function to calculate alpha v
         return None
 
 # Calculate Corrected Continuity Resistance
-rf['Corrected Continuity Resistance (Ω)'] = rf['Continuity Resistance (?)'] - rf['Lead Internal Resistance (?)']
+jf['Corrected Continuity Resistance (Ω)'] = jf['Continuity Resistance (?)'] - jf['Lead Internal Resistance (?)']
 
 # Calculate Specific Conductor Resistance at 30°C
-alpha_values = rf['Conductor Type'].apply(alpha)
-rf['Specific Conductor Resistance (MΩ/m) at 30°C'] = rf['Corrected Continuity Resistance (Ω)'] / (
-    1 + alpha_values * (rf['Conductor Temperature (°C)'] - 30))
-rf['Specific Conductor Resistance (MΩ/m) at 30°C'] /= 1000000
-rf['Specific Conductor Resistance (MΩ/m) at 30°C'] = rf['Specific Conductor Resistance (MΩ/m) at 30°C'].apply(
+alpha_values = jf['Conductor Type'].apply(alpha)
+jf['Specific Conductor Resistance (MΩ/m) at 30°C'] = jf['Corrected Continuity Resistance (Ω)'] / (
+    1 + alpha_values * (jf['Conductor Temperature (°C)'] - 30))
+jf['Specific Conductor Resistance (MΩ/m) at 30°C'] /= 1000000
+jf['Specific Conductor Resistance (MΩ/m) at 30°C'] = jf['Specific Conductor Resistance (MΩ/m) at 30°C'].apply(
     lambda x: format(x, 'E'))
-rf.to_csv('resistance_updated.csv', index=False)
+jf.to_csv('resistance_updated.csv', index=False)
 
 
 def resc_result(Conti, C_ContR):
@@ -49,17 +49,17 @@ def resc_result(Conti, C_ContR):
             return "Fail"
 
 
-def resc_rang(rf):
+def resc_rang(jf):
     res5 = []
-    for row in range(0, len(rf)):
-        Conti = rf.iloc[row]['Is Continuity found?']
-        C_ContR = rf.iloc[row]['Corrected Continuity Resistance (Ω)']
+    for row in range(0, len(jf)):
+        Conti = jf.iloc[row]['Is Continuity found?']
+        C_ContR = jf.iloc[row]['Corrected Continuity Resistance (Ω)']
         res5.append(resc_result(Conti, C_ContR))
     return res5
 
 
-def resc_table(rf, doc):
-    table_data = rf.iloc[:, 0:]
+def resc_table(jf, doc):
+    table_data = jf.iloc[:, 0:]
     num_rows, num_cols = table_data.shape
     table = doc.add_table(rows=num_rows + 1, cols=num_cols + 1)
     table.style = "Table Grid"
@@ -85,7 +85,7 @@ def resc_table(rf, doc):
     for i, row in enumerate(table_data.itertuples(), start=1):
         for j, value in enumerate(row[1:], start=0):
             table.cell(i, j).text = str(value)
-    Results = resc_rang(rf)
+    Results = resc_rang(jf)
     table.cell(0, num_cols).text = "Result"
     table.cell(0, num_cols).width = Inches(0.8)
     for i in range(num_rows):
@@ -101,42 +101,42 @@ def resc_table(rf, doc):
     return doc
 
 
-def resc_graph(rf):
-    x = rf["Conductor Type"]
-    y = rf["Corrected Continuity Resistance (Ω)"]
+def resc_combined_graph(jf):
+    plt.figure(figsize=(16, 8))
+
+    # Bar graph
+    plt.subplot(121)
+    x = jf["Conductor Type"]
+    y = jf["Corrected Continuity Resistance (Ω)"]
     plt.bar(x, y)
     plt.xlabel("Conductor Type")
     plt.ylabel("Corrected Continuity Resistance")
     plt.title("Conductor Type VS Corrected Continuity Resistance")
-    graph8= io.BytesIO()
-    plt.savefig(graph8)
-    plt.close()
-    return graph8
 
-
-def resc_pie(rf):
-    rf['Result'] = resc_rang(rf)
-    rf_counts = rf['Result'].value_counts()
-    labels = rf_counts.index.tolist()
-    values = rf_counts.values.tolist()
-
-    plt.pie(values, labels=labels, autopct='%1.1f%%', startangle=90)
+    # Pie chart
+    plt.subplot(122)
+    jf['Result'] = resc_rang(jf)
+    jf_counts = jf['Result'].value_counts()
+    labels = jf_counts.index.tolist()
+    values = jf_counts.values.tolist()
+    colors = ["#5ac85a", "#dc0000"]
+    plt.pie(values, labels=labels, autopct='%1.1f%%', startangle=90,colors=colors)
     plt.axis('equal')
     plt.title('Test Results')
-    graph9 = io.BytesIO()
-    plt.savefig(graph9)
+    graph_combined = io.BytesIO()
+    plt.savefig(graph_combined)
     plt.close()
-    return graph9
+
+    return graph_combined
+
 
 
 def main():
     doc = Document()
     doc.add_heading('RESISTANCE CONDUCTOR TEST', 0)
-    doc = resc_table(rf, doc)
-    bar_resc = resc_graph(rf)
-    doc.add_picture(bar_resc, width=Inches(5), height=Inches(3))
-    pie_resc= resc_pie(rf)
-    doc.add_picture(pie_resc, width=Inches(5), height=Inches(3))
+    doc = resc_table(jf, doc)
+    graph_combined = resc_combined_graph(jf)
+    doc.add_picture(graph_combined, width=Inches(8), height=Inches(4))
     doc.save("resfinal.docx")
 
 

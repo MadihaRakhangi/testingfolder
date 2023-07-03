@@ -95,33 +95,40 @@ def resistance_table(df, doc):
     return doc
 
 
+def flooresistance_combined_graph(df):
+    plt.figure(figsize=(16, 8))
 
-def resistance_graph(df):
-    x = df["Distance from previous test location (m)"]
+    # Scatter plot
+    plt.subplot(121)
+    x = df["Location"]
     y = df["EffectiveResistance"]
-    plt.scatter(x, y)
-    plt.xlabel("Distance from previous test location (m)")
+    colors = ["#d9534f", "#5bc0de", "#5cb85c", "#428bca"]
+    plt.bar(x, y, color=colors)
+    plt.xlabel("Location")
     plt.ylabel("Effectivefloor")
-    plt.title("Distance from previous test location (m) VS Effectivefloor")
-    graph1 = io.BytesIO()
-    plt.savefig(graph1)
-    plt.close()
-    return graph1
+    plt.title("Location VS Effectivefloor (Scatter Plot)")
 
-
-def resistance_pie(df):
+    # Pie chart
+    plt.subplot(122)
     df['Result'] = resistancerang(df.shape[0])
     df_counts = df['Result'].value_counts()
     labels = df_counts.index.tolist()
     values = df_counts.values.tolist()
-
-    plt.pie(values, labels=labels, autopct='%1.1f%%', startangle=90)
-    plt.axis('equal')
+    colors = ["#5ac85a", "#dc0000"]
+    plt.pie(values, labels=labels, autopct='%1.1f%%', startangle=90, colors=colors)
     plt.title('Test Results')
-    graph3 = io.BytesIO()
-    plt.savefig(graph3)
+    plt.axis('equal')
+
+    # Save the combined graph
+    plt.savefig("combined_graph.png")
+
+    # Save the combined graph as bytes
+    graph_combined = io.BytesIO()
+    plt.savefig(graph_combined)
     plt.close()
-    return graph3
+
+    return graph_combined
+
 
 
 def main():
@@ -130,10 +137,8 @@ def main():
     doc = docx.Document()
     doc.add_heading('FLOOR TEST', 0)
     doc = resistance_table(df, doc)
-    graph_resistance = resistance_graph(df)
-    doc.add_picture(graph_resistance, width=Inches(5), height=Inches(3))
-    pie_resistance = resistance_pie(df)
-    doc.add_picture(pie_resistance, width=Inches(5), height=Inches(3))
+    graph_combined = flooresistance_combined_graph(df)
+    doc.add_picture(graph_combined, width=Inches(8), height=Inches(3))
     doc.save("floor.docx")
 
 

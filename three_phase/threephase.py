@@ -65,6 +65,8 @@ def threephase_result(tf, tf2):
     )
     return tf
 
+
+
 def threephase_table(tf, doc):
     table_data = tf.values
     num_rows, num_cols = table_data.shape
@@ -105,32 +107,35 @@ def threephase_table(tf, doc):
                     run.font.size = Pt(font_size)
     return doc
 
-def threephase_graph(tf):
-    result_counts = tf["ZeroSum Result"].value_counts()
-    plt.bar(result_counts.index, result_counts.values)
-    plt.xlabel("Result")
-    plt.ylabel("Count")
-    plt.title("Earth Pit Electrode Test Results")
-    graph = io.BytesIO()
-    plt.savefig(graph)
-    plt.close()
-    return graph
+def threephase_combined_graph(tf):
+    plt.figure(figsize=(16, 8))
 
+    # Bar graph
+    plt.subplot(121)
+    x = tf["Facility Area"]
+    y = tf["Zero Sum Current (mA)"]
+    colors = ["#d9534f", "#5bc0de", "#5cb85c", "#428bca"]
+    plt.bar(x, y, color=colors)
+    plt.xlabel("Facility Area")
+    plt.ylabel("Zero Sum Current (mA)")
+    plt.title("Facility Area VS  Zero Sum Current (mA)")
 
-def threephase_pie(tf):
+    # Pie chart
+    plt.subplot(122)
     plt.figure(figsize=(6, 6))
     result_counts = tf["ZeroSum Result"].value_counts()
     labels = result_counts.index
     values = result_counts.values
-    colors = ["blue", "orange"]
-
+    colors = ["#5ac85a", "#dc0000"]
     plt.pie(values, labels=labels, colors=colors, autopct='%1.1f%%', startangle=90)
     plt.title("Three Phase Symmetry Test Results")
     plt.axis('equal')  # Equal aspect ratio ensures that the pie is drawn as a circle
-    graph = io.BytesIO()
-    plt.savefig(graph)
+
+    graph_combined = io.BytesIO()
+    plt.savefig(graph_combined)
     plt.close()
-    return graph
+
+    return graph_combined
 
 
 def main():
@@ -144,13 +149,8 @@ def main():
     for section in doc.sections:
         section.left_margin = Inches(0.2)
     doc = threephase_table(tf, doc)
-
-    graph = threephase_graph(tf)
-    doc.add_picture(graph)
-
-    pie=threephase_pie(tf)
-    doc.add_picture(pie)
-
-    doc.save("Symmetry.docx")
+    graph_combined = threephase_combined_graph(tf)
+    doc.add_picture(graph_combined, width=Inches(8), height=Inches(4))
+    doc.save("threephaseSymmetry.docx")
 
 main()

@@ -155,40 +155,49 @@ def voltage_table(vf, doc):
     return doc
 
 
-def voltage_graph(vf):
+def voltage_combined_graph(vf):
+    plt.figure(figsize=(16, 8))
+
+    # Bar graph
+    plt.subplot(121)
     x = vf["Voltage Drop %"]
     y = vf["Calculated Voltage Drop (V)"]
-    plt.bar(x, y)
+    colors = ["#d9534f", "#5bc0de", "#5cb85c", "#428bca"]
+    plt.bar(x, y, color=colors)
     plt.xlabel("Voltage Drop %")
     plt.ylabel("Calculated Voltage Drop (V)")
-    plt.title("Calculated Voltage Drop (V) by Voltage Drop %")
-    graph = io.BytesIO()
-    plt.savefig(graph)
-    plt.close()
-    return graph
+    plt.title("Calculated Voltage Drop (V) VS Voltage Drop %")
 
-def voltage_pie(vf):
-    vf['Result'] = voltage_rang(len(vf))
+    # Pie chart
+    plt.subplot(122)
+    vf['Result'] = voltage_rang(len(vf))  # Ensure you have the voltage_rang() function defined correctly
     vf_counts = vf['Result'].value_counts()
     labels = vf_counts.index.tolist()
     values = vf_counts.values.tolist()
-    plt.pie(values, labels=labels, autopct='%1.1f%%', startangle=90)
+    colors = ["#5ac85a", "#dc0000"]
+    plt.pie(values, labels=labels, autopct='%1.1f%%', startangle=90, colors=colors)
     plt.axis('equal')
     plt.title('Test Results')
-    graph = io.BytesIO()
-    plt.savefig(graph)
+
+    # Save the combined graph
+    plt.savefig("combined_voltage_graph.png")
+
+    # Save the combined graph as bytes
+    graph_combined = io.BytesIO()
+    plt.savefig(graph_combined)
     plt.close()
-    return graph
+
+    return graph_combined
+
+
 
 
 def main():
     doc = Document()
     doc.add_heading("RESISTANCE CONDUCTOR TEST", 0)
     doc = voltage_table(vf, doc)
-    graph_voltage = voltage_graph(vf)
-    doc.add_picture(graph_voltage, width=Inches(6))
-    pie_voltage= voltage_pie(vf)
-    doc.add_picture(pie_voltage, width=Inches(5), height=Inches(3))
+    graph_combined = voltage_combined_graph(vf)
+    doc.add_picture(graph_combined, width=Inches(8), height=Inches(4))
     doc.save("voltage.docx")
 
 

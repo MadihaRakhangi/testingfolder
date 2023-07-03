@@ -8,7 +8,7 @@ from docx.shared import Inches
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 from docx.shared import Pt, RGBColor
 
-P="phasesequence.csv"
+C="phasesequence.csv"
 pf = pd.read_csv("phasesequence.csv")
 
 
@@ -18,7 +18,7 @@ def phase_result(phase_seq):
     else:
         return "ANTICLOCKWISE"
 
-def phaserang(pf):
+def phase_rang(pf):
     res3 = []
     phase_seqs = pf["Phase Sequence"]
     for seq in phase_seqs:
@@ -30,15 +30,10 @@ def phaserang(pf):
             res3.append("UNKNOWN")
     return res3
 
-# def rang(df):
-#     res = []
-#     phase_seqs = df["Phase Sequence"]
-#     for phase_seq in phase_seqs:
-#         res.append(result(phase_seq))
-#     return res
 
-def phase_table(df, doc):
-    table_data = df.iloc[:, :]
+
+def phase_table(pf, doc):
+    table_data = pf.iloc[:, :]
     num_rows, num_cols = table_data.shape
     table = doc.add_table(rows=num_rows + 1, cols=num_cols + 1)
     table.style = "Table Grid"
@@ -65,7 +60,7 @@ def phase_table(df, doc):
     for i, row in enumerate(table_data.itertuples(), start=0):
         for j, value in enumerate(row[1:], start=0):
             table.cell(i + 1, j).text = str(value)
-    results = phaserang(pf)
+    results = phase_rang(pf)
 
     table.cell(0, num_cols).text = "Result"
     for i, result in enumerate(results, start=1):
@@ -80,40 +75,44 @@ def phase_table(df, doc):
                     run.font.size = Pt(font_size)
     return doc
 
-def phase_graph(df):
-    x = df["Phase Sequence"]
-    y = df["V-L3-N"]
-    plt.bar(x, y)
+def phase_combined_graph(pf):
+    plt.figure(figsize=(16, 8))
+
+    # Bar graph
+    plt.subplot(121)
+    x = pf["Phase Sequence"]
+    y = pf["V-L3-N"]
+    colors = ["#d9534f", "#5bc0de", "#5cb85c", "#428bca"]
+    plt.bar(x, y, color=colors)
     plt.xlabel("Phase Sequence")
     plt.ylabel("V-L3-N")
     plt.title("Phase Sequence by V-L3-N")
-    graph4 = io.BytesIO()
-    plt.savefig(graph4)
-    plt.close()
-    return graph4
 
-def phase_pie(pf):
-    pf['Result'] = phaserang(pf)
+    # Pie chart
+    plt.subplot(122)
+    pf['Result'] = phase_rang(pf)  # Ensure you have the phase_rang() function defined correctly
     pf_counts = pf['Result'].value_counts()
     labels = pf_counts.index.tolist()
     values = pf_counts.values.tolist()
-    plt.pie(values, labels=labels, autopct='%1.1f%%', startangle=90)
+    colors = ["#5ac85a", "#dc0000"]
+    plt.pie(values, labels=labels, autopct='%1.1f%%', startangle=90, colors=colors)
     plt.axis('equal')
     plt.title('Test Results')
-    graph5 = io.BytesIO()
-    plt.savefig(graph5)
+    graph_combined = io.BytesIO()
+    plt.savefig(graph_combined)
     plt.close()
-    return graph5
+
+    return graph_combined
+
+
 
 def main():
     pf = pd.read_csv("phasesequence.csv")
     doc = Document()
     doc.add_heading('Phase Sequence test', 0)
     doc = phase_table(pf, doc)
-    bar_chart = phase_graph(pf)
-    doc.add_picture(bar_chart, width=Inches(5), height=Inches(3))
-    pie_diag = phase_pie(pf)
-    doc.add_picture(pie_diag, width=Inches(5), height=Inches(3))
+    graph_combined = phase_combined_graph(pf)
+    doc.add_picture(graph_combined, width=Inches(8), height=Inches(4))  
     doc.save("phasesequence.docx")
 
 main()

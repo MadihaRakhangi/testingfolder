@@ -256,19 +256,7 @@ def resi_result(Type, Test_Current, Rated_OpCurrent, D_Tripped, Trip_Time):     
         return "Pass"
 
 
-def Earth_result(Elec_DistRatio, Mea_EarthResist):
-    if Mea_EarthResist <= 2 and Elec_DistRatio >= 1:
-        return "PASS - Test Electrodes are properly placed"
-    elif Mea_EarthResist <= 2 and Elec_DistRatio < 1:
-        return "PASS - Test Electrodes are not properly placed"
-    elif Mea_EarthResist > 2 and Elec_DistRatio >= 1:
-        return "FAIL - Test Electrodes are properly placed"
-    elif Mea_EarthResist > 2 and Elec_DistRatio < 1:
-        return "FAIL - Test Electrodes are not properly placed"
-    else:
-        return "Invalid"
-    
-def earthpit_result(Elec_DistRatio, Mea_EarthResist):                                                      #earth residual test condition
+def earth_result(Elec_DistRatio, Mea_EarthResist):                                                      #earth residual test condition
     if Mea_EarthResist <= 2 and Elec_DistRatio >= 1:
         return "PASS"
     elif Mea_EarthResist <= 2 and Elec_DistRatio < 1:
@@ -372,7 +360,7 @@ def func_ops_result(func_chk,inter_chk):
     else:
         return "Invalid"
         
-def flooresistance_rang(length):                                                                     #gives  floor and wall resistance result coloumn
+def resistance_rang(length):                                                                     #gives  floor and wall resistance result coloumn
     res1 = []
     for row in range(length):
         Nom_EVolt = df.iloc[row, 5]
@@ -424,16 +412,6 @@ def voltage_rang(length):                                                       
         Dist = vf.iloc[row, 8] - 100  # Calculate Dist for each row
         res.append(voltage_result(VD_val, Type_ISS_val, PoS_val, Dist))
     return res
-
-def earthpit_rang(length):
-    res6 = []
-    for row in range(length):  # Adjusted the range to start from 0
-        Elec_DistRatio= ef.iloc[row, 7]
-        Mea_EarthResist = ef.iloc[row, 8]
-        res6.append(earthpit_result(Elec_DistRatio, Mea_EarthResist))
-    return res6
-
-
 
 def resc_rang(jf):
     res5 = []
@@ -491,7 +469,7 @@ def resistance_table(df, doc):                                                  
                 value = "{:.2f}".format(value)
             table.cell(i, j).text = str(value)
 
-    Results = flooresistance_rang(num_rows)
+    Results = resistance_rang(num_rows)
     table.cell(0, num_cols).text = "Result"
     table.cell(0, num_cols).width = Inches(0.6)
     for i in range(num_rows):
@@ -793,14 +771,14 @@ def earthpit_table(ef, doc):                                                    
         ef["Measured Earth Resistance - Individual"] * ef["No. of Parallel Electrodes"]
     )
 
-    ef["Remark"] = ef.apply(
-        lambda row: earth_remark_result(
+    ef["Result"] = ef.apply(
+        lambda row: earth_result(
             row["Electrode Distance Ratio"], row["Measured Earth Resistance - Individual"]
         ),
         axis=1,
     )
     ef["Result"] = ef.apply(
-        lambda row: earthpit_result(
+        lambda row: earth_remark_result(
             row["Electrode Distance Ratio"], row["Measured Earth Resistance - Individual"]
         ),
         axis=1,
@@ -816,17 +794,16 @@ def earthpit_table(ef, doc):                                                    
     column_widths = {
         0: 0.25,
         1: 0.54,
-        2: 0.6,
-        3: 0.5,
+        2: 0.55,
+        3: 0.59,
         4: 0.48,
         5: 0.56,
-        6: 0.4,
-        7: 0.4,
-        8: 0.4,
+        6: 0.54,
+        7: 0.59,
+        8: 0.37,
         9: 0.55,
         10: 0.5,
-        11: 0.6,
-        12: 0.5
+        11: 0.8
     }
 
     for j, col in enumerate(table_data.columns):
@@ -853,7 +830,6 @@ def earthpit_table(ef, doc):                                                    
                     run.font.size = Pt(font_size)
 
     return doc
-
 
 def threephase_table(tf, doc):                                                                 #creates the three phase table with  result coloumn
     table_data = tf.values
@@ -1004,312 +980,283 @@ def func_ops_table(of, doc):
     return doc
 
 
-def flooresistance_combined_graph(df):
-    plt.figure(figsize=(16, 8))
-
-    # bar graph
-    plt.subplot(121)
+def resistance_graph(df):                                                       #produces  bar graph for floor resistance 
     x = df["Location"]
-    y = df["EffectiveResistance"]
-    colors = ["#d9534f", "#5bc0de", "#5cb85c", "#428bca"]
+    y = df["Measured Output Current (mA)"]
+    colors = ["#d9534f","#5bc0de","#5cb85c","#428bca"]                                    # Add more colors if needed
     plt.bar(x, y, color=colors)
     plt.xlabel("Location")
-    plt.ylabel("Effectivefloor")
-    plt.title("Location VS Effectivefloor (Scatter Plot)")
-
-    # Pie chart
-    plt.subplot(122)
-    df['Result'] =flooresistance_rang(df.shape[0])
-    df_counts = df['Result'].value_counts()
-    labels = df_counts.index.tolist()
-    values = df_counts.values.tolist()
-    colors = ["#5ac85a", "#dc0000"]
-    plt.pie(values, labels=labels, autopct='%1.1f%%', startangle=90, colors=colors)
-    plt.title('Test Results')
-    plt.axis('equal')
-    # Save the combined graph as bytes
-    graph_combined1 = io.BytesIO()
-    plt.savefig(graph_combined1)
+    plt.ylabel("Measured Output Current (mA)")
+    plt.title("Location VS Measured Output Current (mA)")
+    graph1 = io.BytesIO()
+    plt.savefig(graph1)
     plt.close()
-
-    return graph_combined1
-
+    return graph1
 
 
-def insulation_combined_graph(mf):
-    mf = pd.read_csv("Insulate.csv")
-
-    # Bar graph
+def insulation_graph(mf):                                                               #produces  bar graph for insulation
     x = mf["Location"]
     y = mf["Nominal Circuit Voltage"]
-
-    fig = plt.figure(figsize=(12, 6))  # Adjust the figsize as desired
-    ax1 = fig.add_subplot(121)
     colors = ["#d9534f","#5bc0de","#5cb85c","#428bca"]                                       # Add more colors if needed
-    ax1.bar(x, y, color=colors)
-    ax1.set_xlabel("Location")
-    ax1.set_ylabel("Nominal Circuit Voltage")
-    ax1.set_title("Nominal Circuit Voltage by Location")
-    
-
-    # Pie chart
-    earthing_system_counts = mf["Earthing System"].value_counts()
-    ax2 = fig.add_subplot(122)
-    colors = ["#5ac85a", "#dc0000"]
-    ax2.pie(earthing_system_counts, labels=earthing_system_counts.index, autopct="%1.1f%%", colors=colors)
-    ax2.set_title("Earthing System Distribution")
-    ax2.axis("equal")
-    
-
-    graph_combined2 = io.BytesIO()
-    plt.savefig(graph_combined2)
+    plt.bar(x, y, color=colors)
+    plt.xlabel("Location")
+    plt.ylabel("Nominal Circuit Voltage")
+    plt.title("Nominal Circuit Voltage by Location")
+    plt.savefig("chart.png")
+    graph2 = io.BytesIO()
+    plt.savefig(graph2)
     plt.close()
-
-    return graph_combined2
-
+    return graph2
 
 
-def phase_combined_graph(pf):
-    plt.figure(figsize=(16, 8))
-
-    # Bar graph
-    plt.subplot(121)
-    x = pf["Phase Sequence"]
-    y = pf["V-L3-N"]
-    colors = ["#d9534f", "#5bc0de", "#5cb85c", "#428bca"]
+def phase_graph(df):                                                                     #produces  bar graph for phase sequence
+    x = df["Phase Sequence"]
+    y = df["V-L3-N"]
+    colors = ["#d9534f","#5bc0de","#5cb85c","#428bca"]    
     plt.bar(x, y, color=colors)
     plt.xlabel("Phase Sequence")
     plt.ylabel("V-L3-N")
     plt.title("Phase Sequence by V-L3-N")
-
-    # Pie chart
-    plt.subplot(122)
-    pf['Result'] = phase_rang(pf)  # Ensure you have the phase_rang() function defined correctly
-    pf_counts = pf['Result'].value_counts()
-    labels = pf_counts.index.tolist()
-    values = pf_counts.values.tolist()
-    colors = ["#5ac85a", "#dc0000"]
-    plt.pie(values, labels=labels, autopct='%1.1f%%', startangle=90, colors=colors)
-    plt.axis('equal')
-    plt.title('Test Results')
-    graph_combined3 = io.BytesIO()
-    plt.savefig(graph_combined3)
+    graph4 = io.BytesIO()
+    plt.savefig(graph4)
     plt.close()
+    return graph4
 
-    return graph_combined3
 
-
-def polarity_combined_graph(af):
-    plt.figure(figsize=(16, 8))
-
-    # Bar graph
-    plt.subplot(121)
+def polarity_graph(af):                                                                           #produces  bar graph for polarity                                                           
     x = af["Type of Supply"]
     y = af["Line to Neutral Voltage (V)"]
-    colors = ["#d9534f", "#5bc0de", "#5cb85c", "#428bca"]
+    colors = ["#d9534f","#5bc0de","#5cb85c","#428bca"]                                           # Add more colors if needed
     plt.bar(x, y, color=colors)
     plt.xlabel("Type of Supply")
     plt.ylabel("Line to Neutral Voltage (V)")
-    plt.title("Type of Supply VS Line to Neutral Voltage (V)")
-
-    # Pie chart
-    plt.subplot(122)
-    af['Result'] = polarity_rang(af.shape[0])  # Ensure you have the polarityrang() function defined correctly
-    af_counts = af['Result'].value_counts()
-    labels = af_counts.index.tolist()
-    values = af_counts.values.tolist()
-    colors = ["#5ac85a", "#dc0000"]
-    plt.pie(values, labels=labels, autopct='%1.1f%%', startangle=90, colors=colors)
-    plt.axis('equal')
-    plt.title('Polarity Results')
-    # Save the combined graph as bytes
-    graph_combined4 = io.BytesIO()
-    plt.savefig(graph_combined4)
+    plt.title("Type of Supply Type of Supply VS  Line to Neutral Voltage (V)")
+    graph7 = io.BytesIO()
+    plt.savefig(graph7)
     plt.close()
+    return graph7
 
-    return graph_combined4
 
-def voltage_combined_graph(vf):
-    plt.figure(figsize=(16, 8))
-
-    # Bar graph
-    plt.subplot(121)
+def voltage_graph(vf):                                                                                           #produces  bar graph for voltage  
     x = vf["Voltage Drop %"]
     y = vf["Calculated Voltage Drop (V)"]
-    colors = ["#d9534f", "#5bc0de", "#5cb85c", "#428bca"]
+    colors = ["#d9534f","#5bc0de","#5cb85c","#428bca"]                                                              # Add more colors if needed
     plt.bar(x, y, color=colors)
     plt.xlabel("Voltage Drop %")
     plt.ylabel("Calculated Voltage Drop (V)")
-    plt.title("Calculated Voltage Drop (V) VS Voltage Drop %")
-
-    # Pie chart
-    plt.subplot(122)
-    vf['Result'] = voltage_rang(len(vf))  # Ensure you have the voltage_rang() function defined correctly
-    vf_counts = vf['Result'].value_counts()
-    labels = vf_counts.index.tolist()
-    values = vf_counts.values.tolist()
-    colors = ["#5ac85a", "#dc0000"]
-    plt.pie(values, labels=labels, autopct='%1.1f%%', startangle=90, colors=colors)
-    plt.axis('equal')
-    plt.title('Test Results')
-    graph_combined5 = io.BytesIO()
-    plt.savefig(graph_combined5)
+    plt.title("Calculated Voltage Drop (V) by Voltage Drop %")
+    graph = io.BytesIO()
+    plt.savefig(graph)
     plt.close()
+    return graph
 
-    return graph_combined5
 
-
-def residual_combined_graph(rf):
-    plt.figure(figsize=(16, 8))
-
-    # Bar graph
-    plt.subplot(121)
-    y= rf["Trip curve type"]
-    x = rf["No. of Poles"]
-    colors = ["#d9534f", "#5bc0de", "#5cb85c", "#428bca"]
-    plt.bar(x, y, color=colors)
-    plt.ylabel("Trip curve type")
-    plt.xlabel("No. of Poles")
-    plt.title("Residual Current Device Test Results")
-
-    # Pie chart
-    plt.subplot(122)
-    # rf['Result'] = residual_rang(rf.shape[0])  # Ensure you have the residual_rang() function defined correctly
+def residual_graph(rf):                                                                                             #produces  bar graph for residual 
     result_counts = rf["Result"].value_counts()
-    labels = result_counts.index
-    values = result_counts.values
-    colors = ["#5ac85a", "#dc0000"]
-    plt.pie(values, labels=labels, autopct="%1.1f%%", shadow=False, startangle=90, colors=colors)
-    plt.title("Residual Test Results")
-    plt.axis("equal")  # Equal aspect ratio ensures that the pie is drawn as a circle
-    graph_combined6 = io.BytesIO()
-    plt.savefig(graph_combined6)
-    plt.close()
-
-
-    
-
-    return graph_combined6
-
-
-
-def Earth_combined_graph(ef):
-    plt.figure(figsize=(16, 8))
-
-    # Bar graph
-    plt.subplot(121)
-    result_counts = ef["Result"].value_counts()
-    colors = ["#d9534f","#5bc0de","#5cb85c","#428bca"]  # Add more colors if needed
-    plt.bar(result_counts.index, result_counts.values, color=colors)  # Use 'color' instead of 'colors'
+    colors = ["#d9534f","#5bc0de","#5cb85c","#428bca"]                                                               # Add more colors if needed
+    plt.bar(result_counts.index, result_counts.values,color=colors)
     plt.xlabel("Result")
     plt.ylabel("Count")
-    plt.title("Earth Pit Electrode Test Results (Bar Graph)")
+    plt.title("Residual Current Device Test Results")
+    graph1 = io.BytesIO()
+    plt.savefig(graph1)
+    plt.close()
+    return graph1
 
-    # Pie chart
-    plt.subplot(122)
-    ef["Result"] = earthpit_rang(ef.shape[0])
+def Earth_graph(ef):
+    plt.figure(figsize=(15, 10))
     result_counts = ef["Result"].value_counts()
-    labels = result_counts.index
-    values = result_counts.values
-    colors = ["#5ac85a", "#dc0000"]
-    plt.pie(values, labels=labels, colors=colors, autopct='%1.1f%%', startangle=90)
-    plt.title("Earth Pit Electrode Test Results (Pie Chart)")
-    plt.axis('equal')
-    graph_combined = io.BytesIO()
-    plt.savefig(graph_combined)
+    colors = ["#d9534f","#5bc0de","#5cb85c","#428bca"]      # Add more colors if needed
+    plt.bar(result_counts.index, result_counts.values,color=colors)
+    plt.xlabel("Result")
+    plt.ylabel("Count")
+    plt.title("Earth Pit Electrode Test Results")
+    graph = io.BytesIO()
+    plt.savefig(graph)
     plt.close()
+    return graph
 
-    return graph_combined
-
-def threephase_combined_graph(tf):
-    plt.figure(figsize=(16, 8))
-
-    # Bar graph
-    plt.subplot(121)
-    x = tf["ZeroSum Result"]
-    y = tf["Zero Sum Current (mA)"]
-    colors = ["#d9534f", "#5bc0de", "#5cb85c", "#428bca"]
-    plt.bar(x, y, color=colors)
-    plt.xlabel("ZeroSum Result")
-    plt.ylabel("Zero Sum Current (mA)")
-    plt.title("ZeroSum Result VS  Zero Sum Current (mA)")
-
-    # Pie chart
-    plt.subplot(122)
+def threephase_graph(tf):
     result_counts = tf["ZeroSum Result"].value_counts()
-    labels = result_counts.index
-    values = result_counts.values
-    colors = ["#5ac85a", "#dc0000"]
-    plt.pie(values, labels=labels, colors=colors, autopct='%1.1f%%', startangle=90)
-    plt.title("Three Phase Symmetry Test Results")
-    plt.axis('equal')  # Equal aspect ratio ensures that the pie is drawn as a circle
-
-    graph_combined = io.BytesIO()
-    plt.savefig(graph_combined)
+    colors = ["#d9534f","#5bc0de","#5cb85c","#428bca"]    
+    plt.bar(result_counts.index, result_counts.values, color=colors)
+    plt.xlabel("Result")
+    plt.ylabel("Count")
+    plt.title("Earth Pit Electrode Test Results")
+    graph = io.BytesIO()
+    plt.savefig(graph)
     plt.close()
+    return graph
 
-    return graph_combined
-
-def resc_combined_graph(jf):
-    plt.figure(figsize=(16, 8))
-
-    # Bar graph
-    plt.subplot(121)
+def resc_graph(jf):
     x = jf["Conductor Type"]
-    y = jf["Corrected Continuity Resistance (Ω)"]
-    colors = ["#d9534f", "#5bc0de", "#5cb85c", "#428bca"]
+    y = jf['Continuity Resistance (?)']
+    colors = ["#d9534f","#5bc0de","#5cb85c","#428bca"] 
     plt.bar(x, y, color=colors)
     plt.xlabel("Conductor Type")
-    plt.ylabel("Corrected Continuity Resistance")
-    plt.title("Conductor Type VS Corrected Continuity Resistance")
-
-    # Pie chart
-    plt.subplot(122)
-    jf['Result'] = resc_rang(jf)
-    jf_counts = jf['Result'].value_counts()
-    labels = jf_counts.index.tolist()
-    values = jf_counts.values.tolist()
-    colors = ["#5ac85a", "#dc0000"]
-    plt.pie(values, labels=labels, colors=colors, autopct='%1.1f%%', startangle=90)
-    plt.axis('equal')
-    plt.title('Test Results')
-    graph_combined = io.BytesIO()
-    plt.savefig(graph_combined)
+    plt.ylabel("Continuity Resistance (?)")
+    plt.title("Conductor Type VS Continuity Resistance (?)")
+    graph8= io.BytesIO()
+    plt.savefig(graph8)
     plt.close()
-
-    return graph_combined
-
+    return graph8
 
 
-def func_ops_combined_graph(of):
-    plt.figure(figsize=(16, 8))
-
-    # Bar graph
-    plt.subplot(121)
+def func_ops_graph(of):
     x = of["Interlock check"]
     y = of["SN"]
-    colors = ["#d9534f", "#5bc0de", "#5cb85c", "#428bca"]
+    colors = ["#d9534f","#5bc0de","#5cb85c","#428bca"] 
     plt.bar(x, y, color=colors)
     plt.xlabel("Interlock check")
     plt.ylabel("SN")
     plt.title("SN VS Interlock check")
+    graph8= io.BytesIO()
+    plt.savefig(graph8)
+    plt.close()
+    return graph8
 
-    # Pie chart
-    plt.subplot(122)
+
+def resistance_pie(df):
+    df["Result"] = resistance_rang(df.shape[0])
+    df_counts = df["Result"].value_counts()
+    labels = df_counts.index.tolist()
+    values = df_counts.values.tolist()
+    colors = ["#b6d7a8", "#e06666"]
+    plt.pie(values, labels=labels, autopct="%1.1f%%", startangle=90,colors=colors)
+    plt.axis("equal")
+    plt.title("Test Results")
+    graph3 = io.BytesIO()
+    plt.savefig(graph3)
+    plt.close()
+    return graph3
+
+
+def insulation_pie(mf):
+    earthing_system_counts = mf["Earthing System"].value_counts()
+    colors = ["#b6d7a8", "#e06666"]
+    plt.pie(earthing_system_counts, labels=earthing_system_counts.index, autopct="%1.1f%%",startangle=90,colors=colors)
+    plt.axis("equal")
+    plt.title("Earthing System Distribution")
+    graph6 = io.BytesIO()
+    plt.savefig(graph6)
+    plt.close()
+    return graph6
+
+
+def phase_pie(pf):
+    pf["Result"] = phase_rang(pf)
+    pf_counts = pf["Result"].value_counts()
+    labels = pf_counts.index.tolist()
+    values = pf_counts.values.tolist()
+    colors = ["#b6d7a8", "#e06666"]
+    plt.pie(values, labels=labels, autopct="%1.1f%%", startangle=90,colors=colors)
+    plt.axis("equal")
+    plt.title("Test Results")
+    graph5 = io.BytesIO()
+    plt.savefig(graph5)
+    plt.close()
+    return graph5
+
+
+def polarity_pie(af):
+    af["Result"] = polarity_rang(af.shape[0])
+    af_counts = af["Result"].value_counts()
+    labels = af_counts.index.tolist()
+    values = af_counts.values.tolist()
+    colors = ["#b6d7a8", "#e06666"]
+    plt.pie(values, labels=labels, autopct="%1.1f%%", startangle=90,colors=colors)
+    plt.axis("equal")
+    plt.title("Polarity Results")
+    graph = io.BytesIO()
+    plt.savefig(graph)
+    plt.close()
+    return graph
+
+
+def voltage_pie(vf):
+    vf["Result"] = voltage_rang(len(vf))
+    vf_counts = vf["Result"].value_counts()
+    labels = vf_counts.index.tolist()
+    values = vf_counts.values.tolist()
+    colors = ["#b6d7a8", "#e06666"]
+    plt.pie(values, labels=labels, autopct="%1.1f%%", startangle=90,colors=colors)
+    plt.axis("equal")
+    plt.title("Test Results")
+    graph = io.BytesIO()
+    plt.savefig(graph)
+    plt.close()
+    return graph
+
+
+def resi_pie(rf):
+    plt.figure(figsize=(6, 6))
+    result_counts = rf["Result"].value_counts()
+    labels = result_counts.index
+    values = result_counts.values
+    colors = ["#b6d7a8", "#e06666"]
+    plt.pie(values, labels=labels, autopct="%1.1f%%", shadow=False, startangle=90,colors=colors)
+    plt.title("Residual Test Results")
+    plt.axis("equal")                                                                     # Equal aspect ratio ensures that the pie is drawn as a circle
+    graph = io.BytesIO()
+    plt.savefig(graph)
+    plt.close()
+    return graph
+
+def earth_pie(rf):
+    plt.figure(figsize=(6, 6))
+    result_counts = rf["Result"].value_counts()
+    labels = result_counts.index
+    values = result_counts.values
+    colors = ["#b6d7a8", "#e06666"]
+    plt.pie(values, labels=labels, autopct="%1.1f%%", shadow=False, startangle=90,colors=colors)
+    plt.title("Earth Pit Electrode Test Results")
+    plt.axis("equal")                                                                    # Equal aspect ratio ensures that the pie is drawn as a circle
+    graph = io.BytesIO()
+    plt.savefig(graph)
+    plt.close()
+    return graph
+
+def threephase_pie(tf):
+    plt.figure(figsize=(6, 6))
+    result_counts = tf["ZeroSum Result"].value_counts()
+    labels = result_counts.index
+    values = result_counts.values
+    colors = ["#b6d7a8", "#e06666"]
+    plt.pie(values, labels=labels, autopct="%1.1f%%", shadow=False, startangle=90,colors=colors)
+    plt.title("Three Phase Symmetry Test Results")
+    plt.axis('equal')                                                                 # Equal aspect ratio ensures that the pie is drawn as a circle
+    graph = io.BytesIO()
+    plt.savefig(graph)
+    plt.close()
+    return graph
+
+def resc_pie(jf):
+    jf['Result'] = resc_rang(jf)
+    jf_counts = jf['Result'].value_counts()
+    labels = jf_counts.index.tolist()
+    values = jf_counts.values.tolist()
+    colors = ["#b6d7a8", "#e06666"]
+    plt.pie(values, labels=labels, autopct="%1.1f%%", shadow=False, startangle=90,colors=colors)
+    plt.axis('equal')
+    plt.title('Test Results')
+    graph9 = io.BytesIO()
+    plt.savefig(graph9)
+    plt.close()
+    return graph9
+
+def func_ops_pie(of):
     of['Result'] = func_ops_rang(of)
     of_counts = of['Result'].value_counts()
     labels = of_counts.index.tolist()
     values = of_counts.values.tolist()
-    colors = ["#5ac85a", "#dc0000"]
-    plt.pie(values, labels=labels, autopct='%1.1f%%', startangle=90,colors=colors)
+    colors = ["#b6d7a8", "#e06666"]
+    plt.pie(values, labels=labels, autopct="%1.1f%%", shadow=False, startangle=90,colors=colors)
     plt.axis('equal')
     plt.title('Test Results')
-    # Save the combined graph as bytes
-    graph_combined = io.BytesIO()
-    plt.savefig(graph_combined)
+    graph9 = io.BytesIO()
+    plt.savefig(graph9)
     plt.close()
-
-    return graph_combined
+    return graph9
 
 
 def main():
@@ -1394,57 +1341,75 @@ def main():
 
     doc.add_paragraph("FLOOR-RESISTANCE TEST")
     doc = resistance_table(df, doc)                                                                                     # Add a table of resistance data to the document
-    graph_combined = flooresistance_combined_graph(df)
-    doc.add_picture(graph_combined, width=Inches(8), height=Inches(3))                                                                                     # Add the resistance pie chart to the document
+    graph_resistance = resistance_graph(df)                                                                             # Generate a graph of resistance data
+    doc.add_picture(graph_resistance,width=Inches(3), height=Inches(3))                                                                                  # Add the resistance graph to the document
+    pie_resistance = resistance_pie(df)                                                                                 # Generate a pie chart of resistance data
+    doc.add_picture(pie_resistance,width=Inches(3), height=Inches(3))                                                                                      # Add the resistance pie chart to the document
 
     doc.add_paragraph("INSULATION TEST")
     doc = insulation_table(mf, doc)                                                                                           # Add a table of insulation data to the document
-    graph_combined = insulation_combined_graph(mf)
-    doc.add_picture(graph_combined,width=Inches(8), height=Inches(4))                                                         # Add the insulation pie chart to the document
+    graph_insulation = insulation_graph(mf)                                                                                   # Generate a graph of insulation data
+    doc.add_picture(graph_insulation,width=Inches(3), height=Inches(3))                                                      # Add the insulation graph to the document
+    pie_insulation = insulation_pie(mf)                                                                                       # Generate a pie chart of insulation data
+    doc.add_picture(pie_insulation,width=Inches(3), height=Inches(3))                                                         # Add the insulation pie chart to the document
 
     doc.add_paragraph("PHASE SEQUENCE TEST")
     doc = phase_table(pf, doc)                                                                                                   # Add a table of phase sequence data to the document
-    graph_combined = phase_combined_graph(pf)
-    doc.add_picture(graph_combined, width=Inches(8), height=Inches(4))                                                            # Add the phase sequence pie chart to the document
+    graph_phase = phase_graph(pf)                                                                                                # Generate a graph of phase sequence data
+    doc.add_picture(graph_phase,width=Inches(3), height=Inches(3))                                                              # Add the phase sequence graph to the document
+    pie_phase = phase_pie(pf)                                                                                                    # Generate a pie chart of phase sequence data
+    doc.add_picture(pie_phase,width=Inches(3), height=Inches(3))                                                                # Add the phase sequence pie chart to the document
 
     doc.add_paragraph("POLARITY TEST")
     doc = polarity_table(af, doc)                                                                                                        # Add a table of polarity data to the document
-    graph_combined = polarity_combined_graph(af)
-    doc.add_picture(graph_combined, width=Inches(8), height=Inches(4))                                                                   # Add the polarity pie chart to the document
+    graph_polarity = polarity_graph(af)                                                                                                  # Generate a graph of polarity data
+    doc.add_picture(graph_polarity,width=Inches(3), height=Inches(3))                                                                                     # Add the polarity graph to the document
+    pie_polarity = polarity_pie(af)                                                                                                      # Generate a pie chart of polarity data
+    doc.add_picture(pie_polarity,width=Inches(3), height=Inches(3))                                                                     # Add the polarity pie chart to the document
+
+    doc.add_page_break()
 
     doc.add_paragraph("VOLTAGE DROP TEST")
     doc = voltage_table(vf, doc)                                                                                                   # Add a table of voltage drop data to the document
-    graph_combined = voltage_combined_graph(vf)
-    doc.add_picture(graph_combined, width=Inches(8), height=Inches(4))                                                                # Add the voltage drop pie chart to the document
+    graph_voltage = voltage_graph(vf)                                                                                              # Generate a graph of voltage drop data
+    doc.add_picture(graph_voltage,width=Inches(3), height=Inches(3))                                                                                # Add the voltage drop graph to the document
+    pie_voltage = voltage_pie(vf)                                                                                                  # Generate a pie chart of voltage drop data
+    doc.add_picture(pie_voltage,width=Inches(3), height=Inches(3))                                                                # Add the voltage drop pie chart to the document
 
     doc.add_paragraph("Residual Current Device Test")
     doc = residual_table(rf, doc)                                                                                                     # Add a table of residual current device data to the document
-    graph_combined = residual_combined_graph(rf)
-    doc.add_picture(graph_combined, width=Inches(8), height=Inches(4))                                                                                                            # Generate a graph of residual current device data
+    graph_resi = residual_graph(rf)                                                                                                              # Generate a graph of residual current device data
+    doc.add_picture(graph_resi,width=Inches(3), height=Inches(3))                                                                    # Add the residual current device graph to the document
+    pie_resi = resi_pie(vf)                                                                                                           # Generate a pie chart of residual current device data
+    doc.add_picture(pie_resi,width=Inches(3), height=Inches(3))                                                                       # Add the residual current device pie chart to the document
 
     doc.add_paragraph("EARTH PIT  RESISTANCE TEST")
     doc = earthpit_table(ef, doc)                                                                                                        # Add a table of earth pit resistance data to the document
-    graph_combined1 = Earth_combined_graph(ef)
-    doc.add_picture(graph_combined1, width=Inches(8), height=Inches(4))
-
+    graph_earth = voltage_graph(vf)                                                                                                      # Generate a graph of earth pit resistance data
+    doc.add_picture(graph_earth,width=Inches(3), height=Inches(3))                                                                                        # Add the earth pit resistance graph to the document
+    graph_pie = earth_pie(ef)                                                                                                            # Generate a pie chart of earth pit resistance data
+    doc.add_picture(graph_pie,width=Inches(3), height=Inches(3))                                                                                          # Add the earth pit resistance pie chart to the document
 
     doc.add_paragraph("THREE PHASE SYMMETRY TEST")
     doc = threephase_table(tf, doc)                                                                                                      # Add a table of three-phase symmetry data to the document
-    graph = threephase_combined_graph(tf)                                                                                                         # Generate a graph of three-phase symmetry data
-    graph_combined = threephase_combined_graph(tf)
-    doc.add_picture(graph_combined, width=Inches(8), height=Inches(4))                                                                                                              # Add the three-phase symmetry pie chart to the document
+    graph = threephase_graph(tf)                                                                                                         # Generate a graph of three-phase symmetry data
+    doc.add_picture(graph,width=Inches(3), height=Inches(3))                                                                                                                # Add the three-phase symmetry graph to the document
+    pie = threephase_pie(tf)                                                                                                            # Generate a pie chart of three-phase symmetry data
+    doc.add_picture(pie,width=Inches(3), height=Inches(3))                                                                                                                # Add the three-phase symmetry pie chart to the document
 
     doc.add_paragraph("RESISTANCE CONDUCTOR TEST")
     doc = resc_table(jf, doc)                                                                                                      # Add a table of three-phase symmetry data to the document
-    graph_combined = resc_combined_graph(jf)
-    doc.add_picture(graph_combined, width=Inches(8), height=Inches(4))
+    graph_resc = resc_graph(jf)                                                                                                         # Generate a graph of three-phase symmetry data
+    doc.add_picture(graph_resc,width=Inches(3), height=Inches(3))                                                                                                                # Add the three-phase symmetry graph to the document
+    pie_resc = resc_pie(jf)                                                                                                                # Generate a pie chart of three-phase symmetry data
+    doc.add_picture(pie_resc,width=Inches(3), height=Inches(3))
 
     doc.add_heading('FUNCTIONS AND OPERATION TEST')
     doc = func_ops_table(of, doc)
-    graph_combined = func_ops_combined_graph(of)
-    doc.add_picture(graph_combined, width=Inches(8), height=Inches(4))
-    
-    
+    bar_func_ops = func_ops_graph(of)
+    doc.add_picture(bar_func_ops,width=Inches(3), height=Inches(3))
+    pie_func_ops= func_ops_pie(of)
+    doc.add_picture(pie_func_ops,width=Inches(3), height=Inches(3))  
 
     doc.save("scriptreport.docx")                                                                                                        # Save the Word document with all the added content
 
