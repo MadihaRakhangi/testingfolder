@@ -2445,9 +2445,6 @@ def main():
     doc.add_picture(graph_combined, width=Inches(8), height=Inches(4))
     doc.save("ELI_Report.docx")   
 
-
-
-
     doc.save("scriptreport.docx")                                                                                                        # Save the Word document with all the added content
 
    
