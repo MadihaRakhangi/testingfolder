@@ -44,9 +44,7 @@ Q="eli-socket.csv"
 sf = pd.read_csv("eli-socket.csv")
 R="sugg-max-eli.csv"
 fs = pd.read_csv("sugg-max-eli.csv")
-X="eli-test.csv"
 gf = pd.read_csv("eli-test.csv")
-Y="sugg-max-eli.csv"
 fg = pd.read_csv("sugg-max-eli.csv")
 
 
@@ -175,8 +173,8 @@ gf["Device Rating (A)"] = gf["Device Rating (A)"].astype(int)
 Device_Rating = gf["Device Rating (A)"]
 No_phase = gf["No. of Phases"]
 T_Curve = gf["Trip Curve"]
-new_column = []
-result_column = []
+new_column1 = []
+result_column1 = []
 P = 0
 K = 0
 TMS = 1
@@ -685,84 +683,84 @@ def eli_test_result1(gf1, gf2):
     I = Is * ((((K * TMS) / Td) + 1) ** (1 / P))
     if row["Earthing Configuration"] == "TN":
         IEC_val_TN = row["V_LE"] / I
-        new_column.append(round(IEC_val_TN, 4))
+        new_column1.append(round(IEC_val_TN, 4))
         if row["No. of Phases"] == 3:
             if (
                 row["L1-ELI"] <= IEC_val_TN
                 and row["L2-ELI"] <= IEC_val_TN
                 and row["L3-ELI"] <= IEC_val_TN
             ):
-                result_column.append("Pass")
+                result_column1.append("Pass")
             else:
-                result_column.append("Fail")
+                result_column1.append("Fail")
         elif row["No. of Phases"] == 1:
             if row["L1-ELI"] <= IEC_val_TN:
-                result_column.append("Pass")
+                result_column1.append("Pass")
             else:
-                result_column.append("Fail")
+                result_column1.append("Fail")
         else:
-            result_column.append("N/A")
+            result_column1.append("N/A")
     elif row["Earthing Configuration"] == "TT":
         IEC_val_TT = 50 / I
-        new_column.append(round(IEC_val_TT, 4))
+        new_column1.append(round(IEC_val_TT, 4))
         if row["No. of Phases"] == 3:
             if (
                 row["L1-ELI"] <= IEC_val_TT
                 and row["L2-ELI"] <= IEC_val_TT
                 and row["L3-ELI"] <= IEC_val_TT
             ):
-                result_column.append("Pass")
+                result_column1.append("Pass")
             else:
-                result_column.append("Fail")
+                result_column1.append("Fail")
         elif row["No. of Phases"] == 1:
             if row["L1-ELI"] <= IEC_val_TT:
-                result_column.append("Pass")
+                result_column1.append("Pass")
             else:
-                result_column.append("Fail")
+                result_column1.append("Fail")
         else:
-            result_column.append("N/A")
+            result_column1.append("N/A")
 
 
 def eli_test_result2(gf1, gf2):
     I = Is * (((((A / ((Td / TDS) - B)) + 1)) ** (1 / p)))
     if row["Earthing Configuration"] == "TN":
         IEEE_val_TN = row["V_LE"] / I
-        new_column.append(round(IEEE_val_TN, 4))
+        new_column1.append(round(IEEE_val_TN, 4))
         if row["No. of Phases"] == 3:
             if (
                 row["L1-ELI"] <= IEEE_val_TN
                 and row["L2-ELI"] <= IEEE_val_TN
                 and row["L3-ELI"] <= IEEE_val_TN
             ):
-                result_column.append("Pass")
+                result_column1.append("Pass")
             else:
-                result_column.append("Fail")
+                result_column1.append("Fail")
         elif row["No. of Phases"] == 1:
             if row["L1-ELI"] <= IEEE_val_TN:
-                result_column.append("Pass")
+                result_column1.append("Pass")
             else:
-                result_column.append("Fail")
+                result_column1.append("Fail")
         else:
-            result_column.append("N/A")
+            result_column1.append("N/A")
     elif row["Earthing Configuration"] == "TT":
         IEEE_val_TT = 50 / I
-        new_column.append(round(IEEE_val_TT, 4))
+        new_column1.append(round(IEEE_val_TT, 4))
         if row["No. of Phases"] == 3:
             if (
                 row["L1-ELI"] <= IEEE_val_TT
                 and row["L2-ELI"] <= IEEE_val_TT
                 and row["L3-ELI"] <= IEEE_val_TT
             ):
-                result_column.append("Pass")
+                result_column1.append("Pass")
             else:
-                result_column.append("Fail")
+                result_column1.append("Fail")
         elif row["No. of Phases"] == 1:
             if row["L1-ELI"] <= IEEE_val_TT:
-                result_column.append("Pass")
+                result_column1.append("Pass")
             else:
-                result_column.append("Fail")
+                result_column1.append("Fail")
         else:
-            result_column.append("N/A")
+            result_column1.append("N/A")
 
 
 for index, row in gf.iterrows():
@@ -776,60 +774,60 @@ for index, row in gf.iterrows():
             val_MCB = (
                 0  # Set a default value when 'Trip Curve' value is not found in sugg-max-eli.csv
             )
-        new_column.append(round(val_MCB, 2))
+        new_column1.append(round(val_MCB, 2))
 
         if row["No. of Phases"] == 3:
             if row["L1-ELI"] <= val_MCB and row["L2-ELI"] <= val_MCB and row["L3-ELI"] <= val_MCB:
-                result_column.append("Pass")
+                result_column1.append("Pass")
             else:
-                result_column.append("Fail")
+                result_column1.append("Fail")
         elif row["No. of Phases"] == 1:
             if row["L1-ELI"] <= val_MCB:
-                result_column.append("Pass")
+                result_column1.append("Pass")
             else:
-                result_column.append("Fail")
+                result_column1.append("Fail")
         else:
-            result_column.append("N/A")
+            result_column1.append("N/A")
 
     elif row["Device Type"] in ["RCD", "RCBO", "RCCB"] and row["Earthing Configuration"] == "TN":
         rccb_val_TN = (row["V_LE"] / row["Device Sensitivity (mA)"]) * 1000
-        new_column.append(round(rccb_val_TN, 4))
+        new_column1.append(round(rccb_val_TN, 4))
         if row["No. of Phases"] == 3:
             if (
                 row["L1-ELI"] <= rccb_val_TN
                 and row["L2-ELI"] <= rccb_val_TN
                 and row["L3-ELI"] <= rccb_val_TN
             ):
-                result_column.append("Pass")
+                result_column1.append("Pass")
             else:
-                result_column.append("Fail")
+                result_column1.append("Fail")
         elif row["No. of Phases"] == 1:
             if row["L1-ELI"] <= rccb_val_TN:
-                result_column.append("Pass")
+                result_column1.append("Pass")
             else:
-                result_column.append("Fail")
+                result_column1.append("Fail")
         else:
-            result_column.append("N/A")
+            result_column1.append("N/A")
 
     elif row["Device Type"] in ["RCD", "RCBO", "RCCB"] and row["Earthing Configuration"] == "TT":
         rccb_val_TT = (50 / row["Device Sensitivity (mA)"]) * 1000
-        new_column.append(round(rccb_val_TT, 4))
+        new_column1.append(round(rccb_val_TT, 4))
         if row["No. of Phases"] == 3:
             if (
                 row["L1-ELI"] <= rccb_val_TT
                 and row["L2-ELI"] <= rccb_val_TT
                 and row["L3-ELI"] <= rccb_val_TT
             ):
-                result_column.append("Pass")
+                result_column1.append("Pass")
             else:
-                result_column.append("Fail")
+                result_column1.append("Fail")
         elif row["No. of Phases"] == 1:
             if row["L1-ELI"] <= rccb_val_TT:
-                result_column.append("Pass")
+                result_column1.append("Pass")
             else:
-                result_column.append("Fail")
+                result_column1.append("Fail")
         else:
-            result_column.append("N/A")
+            result_column1.append("N/A")
 
     elif row["Device Type"] == "MCCB" or row["Device Type"] == "ACB":
         if row["Type of Circuit Location"] == "Final":
@@ -873,13 +871,11 @@ for index, row in gf.iterrows():
             p = 2
             eli_test_result2(gf1, gf2)
 
-new_column = pd.Series(new_column[: len(gf2)], name="Suggested Max ELI (Ω)")
-gf2["Suggested Max ELI (Ω)"] = new_column
+new_column1 = pd.Series(new_column1[: len(gf2)], name="Suggested Max ELI (Ω)")
+gf2["Suggested Max ELI (Ω)"] = new_column1
 gf2["Suggested Max ELI (Ω)"] = gf2["Suggested Max ELI (Ω)"].apply(lambda x: "{:.2f}".format(x))
-result_column = pd.Series(result_column[: len(gf2)], name="Result")
-gf2["Result"] = result_column
-
-
+result_column1 = pd.Series(result_column1[: len(gf2)], name="Result")
+gf2["Result"] = result_column1
         
 def flooresistance_rang(length):                                                                     #gives  floor and wall resistance result coloumn
     res1 = []
@@ -2316,9 +2312,7 @@ def main():
     R="sugg-max-eli.csv"
     fs = pd.read_csv("sugg-max-eli.csv")
 
-    X="eli-test.csv"
     gf = pd.read_csv("eli-test.csv")
-    Y="sugg-max-eli.csv"
     fg = pd.read_csv("sugg-max-eli.csv")
 
 
@@ -2433,17 +2427,19 @@ def main():
     doc.add_paragraph("\n")
     doc = create_eli_table2(sf2, doc)                                                                                                 # Add a table of voltage drop data to the document
     graph_combined = socket_combined_graph(sf)
-    doc.add_picture(graph_combined, width=Inches(8), height=Inches(4))   
+    doc.add_picture(graph_combined, width=Inches(8), height=Inches(4))
 
-    
-    doc.add_paragraph("ELI CIRCUIT BREAKER TEST") 
+    doc.add_paragraph("ELI  TEST")  
     doc = eli_test_table1(gf1, doc)
     doc.add_paragraph("\n")
-    doc = eli_test_table2(gf2, doc)
-    doc.add_paragraph("ELI  TEST")                                                                                                   # Add a table of voltage drop data to the document
+    doc = eli_test_table2(gf2, doc)                                                                                                 # Add a table of voltage drop data to the document
     graph_combined = eli_test_combined_graph(gf)
     doc.add_picture(graph_combined, width=Inches(8), height=Inches(4))
-    doc.save("ELI_Report.docx")   
+    doc.save("ELI_Report.docx")
+      
+
+
+
 
     doc.save("scriptreport.docx")                                                                                                        # Save the Word document with all the added content
 
