@@ -8,6 +8,9 @@ from docx.shared import Inches
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 from docx.shared import Pt, RGBColor
 import numpy as np
+from docx.shared import RGBColor
+from docx.oxml.ns import nsdecls
+from docx.oxml import parse_xml
 
 E="residual.csv"
 rf = pd.read_csv("residual.csv")
@@ -77,6 +80,9 @@ def residual_rang(length):
     return res7
 
 
+from docx.oxml.ns import nsdecls
+from docx.oxml import parse_xml
+
 def Resi_create_table(rf, doc):
     rf["Result"] = np.NaN
     for index, row in rf.iterrows():
@@ -119,7 +125,7 @@ def Resi_create_table(rf, doc):
         13: 0.4,
         14: 0.49,
         15: 0.5,
-        16: 0.4,  # Width for Result column
+        num_cols: 0.4,  # Width for Result column
     }
     for j, col in enumerate(table_data.columns):
         table.cell(0, j).text = col
@@ -127,6 +133,21 @@ def Resi_create_table(rf, doc):
     for i, row in enumerate(table_data.itertuples(), start=1):
         for j, value in enumerate(row[1:], start=0):
             table.cell(i, j).text = str(value)
+    
+    # Add shading to the Result column based on the result value
+    for i in range(1, num_rows + 1):
+        result = table.cell(i, num_cols - 1).text
+        cell = table.cell(i, num_cols - 1)
+        if result == "Pass":
+            shading_elm = parse_xml(
+                r'<w:shd {} w:fill="#5ac85a"/>'.format(nsdecls("w"))
+            )  # Green color
+            cell._tc.get_or_add_tcPr().append(shading_elm)
+        else:
+            shading_elm = parse_xml(
+                r'<w:shd {} w:fill="#dc0000"/>'.format(nsdecls("w"))
+            )  # Red color
+            cell._tc.get_or_add_tcPr().append(shading_elm)
 
     font_size = 7
     for row in table.rows:
@@ -135,6 +156,7 @@ def Resi_create_table(rf, doc):
                 for run in paragraph.runs:
                     run.font.size = Pt(font_size)
     return doc
+
 
 def residual_combined_graph(rf):
     plt.figure(figsize=(16, 8))
