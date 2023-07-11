@@ -4,6 +4,9 @@ from docx import Document
 from docx.shared import Inches
 from docx.shared import Pt
 import io
+from docx.shared import RGBColor
+from docx.oxml.ns import nsdecls
+from docx.oxml import parse_xml
 
 V="voltage.csv"
 vf = pd.read_csv("voltage.csv")
@@ -110,8 +113,6 @@ def voltage_rang(length):
         Dist = vf.iloc[row, 8] - 100  # Calculate Dist for each row
         res.append(voltage_result(VD_val, Type_ISS_val, PoS_val, Dist))
     return res
-
-
 def voltage_table(vf, doc):
     table_data = vf.iloc[:, 0:]
     num_rows, num_cols = table_data.shape
@@ -131,7 +132,7 @@ def voltage_table(vf, doc):
         9: 0.43,
         10: 0.56,
         11: 0.56,
-        12: 0.5,
+        num_cols - 1: 0.5,  # Width for Result column
     }
     for j, col in enumerate(table_data.columns):
         table.cell(0, j).text = col
@@ -145,6 +146,19 @@ def voltage_table(vf, doc):
     for i in range(num_rows):
         res_index = i
         table.cell(i + 1, num_cols).text = Results[res_index]
+        # Add shading to the Result column based on the result value
+        result = Results[res_index]
+        cell = table.cell(i + 1, num_cols)
+        if result == "Pass":
+            shading_elm = parse_xml(
+                '<w:shd {} w:fill="5ac85a"/>'.format(nsdecls('w'))
+            )  # Green color
+            cell._element.tcPr.append(shading_elm)
+        else:
+            shading_elm = parse_xml(
+                '<w:shd {} w:fill="dc0000"/>'.format(nsdecls('w'))
+            )  # Red color
+            cell._element.tcPr.append(shading_elm)
     font_size = 7
 
     for row in table.rows:
@@ -153,7 +167,6 @@ def voltage_table(vf, doc):
                 for run in paragraph.runs:
                     run.font.size = Pt(font_size)
     return doc
-
 
 def voltage_combined_graph(vf):
     plt.figure(figsize=(16, 8))

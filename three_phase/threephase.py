@@ -5,6 +5,9 @@ from docx.shared import Inches, Pt
 import numpy as np
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 import io
+from docx.shared import RGBColor
+from docx.oxml.ns import nsdecls
+from docx.oxml import parse_xml
 
 H="threephase.csv"
 tf=pd.read_csv("threephase.csv")
