@@ -92,11 +92,11 @@ def earthpit_table(ef, doc):                                                    
         3: 0.5,
         4: 0.6,
         5: 0.56,
-        6: 0.4,
-        7: 0.4,
-        8: 0.4,
-        9: 0.4,
-        10: 0.5,
+        6: 0.55,
+        7: 0.55,
+        8: 0.6,
+        9: 0.6,
+        10: 0.6,
         11: 0.7,
         12: 0.5
     }
@@ -154,7 +154,7 @@ def Earth_combined_graph(ef):
 
     # Bar graph
     plt.subplot(121)
-    x = ef[" Location"]
+    x = ef["Location"]
     y = ef["Measured Earth Resistance - Individual"]
     colors = ["#b967ff","#e0a899","#fffb96","#428bca"]  # Add more colors if needed
     plt.bar(x,y, color=colors)  # Use 'color' instead of 'colors'
@@ -167,13 +167,15 @@ def Earth_combined_graph(ef):
     result_counts = ef["Result"].value_counts()
     labels = result_counts.index
     values = result_counts.values
-    colors = ["#5ac85a", "#dc0000"]
+    colors = ["#dc0000","#5ac85a"]
     plt.pie(values, labels=labels, colors=colors, autopct='%1.1f%%', startangle=90)
     plt.title("Earth Pit Electrode Test Results (Pie Chart)")
     plt.axis('equal')
+    
     graph_combined = io.BytesIO()
     plt.savefig(graph_combined)
     plt.close()
+
 
     return graph_combined
 
