@@ -7,6 +7,9 @@ import io
 from docx.shared import Inches
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 from docx.shared import Pt, RGBColor
+from docx.shared import RGBColor
+from docx.oxml.ns import nsdecls
+from docx.oxml import parse_xml
 
 C="phasesequence.csv"
 pf = pd.read_csv("phasesequence.csv")
@@ -30,8 +33,6 @@ def phase_rang(pf):
             res3.append("UNKNOWN")
     return res3
 
-
-
 def phase_table(pf, doc):
     table_data = pf.iloc[:, :]
     num_rows, num_cols = table_data.shape
@@ -52,7 +53,8 @@ def phase_table(pf, doc):
         9: 0.4,
         10: 0.4,
         11: 0.4,
-        12:0.6,
+        12: 0.6,
+        num_cols: 0.8,  # Width for the "Result" column
     }
     for j, col in enumerate(table_data.columns):
         table.cell(0, j).text = col
@@ -64,8 +66,21 @@ def phase_table(pf, doc):
 
     table.cell(0, num_cols).text = "Result"
     for i, result in enumerate(results, start=1):
-        table.cell(i, num_cols).text = result
-        table.cell(i, num_cols).width=Inches(0.8)
+        cell = table.cell(i, num_cols)
+        cell.text = result
+        
+        if result == "CLOCKWISE":
+            shading_elm = parse_xml(
+                r'<w:shd {} w:fill="#5ac85a"/>'.format(nsdecls("w"))
+            )  # Green color
+            cell._tc.get_or_add_tcPr().append(shading_elm)
+        elif result == "ANTICLOCKWISE":
+            shading_elm = parse_xml(
+                r'<w:shd {} w:fill="#dc0000"/>'.format(nsdecls("w"))
+            )  # Red color
+            cell._tc.get_or_add_tcPr().append(shading_elm)
+
+        cell.width = Inches(column_widths[num_cols])  # Set width for the "Result" column
 
     font_size = 8
     for row in table.rows:
@@ -74,6 +89,7 @@ def phase_table(pf, doc):
                 for run in paragraph.runs:
                     run.font.size = Pt(font_size)
     return doc
+
 
 def phase_combined_graph(pf):
     plt.figure(figsize=(16, 8))
