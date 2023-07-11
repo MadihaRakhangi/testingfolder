@@ -7,6 +7,9 @@ import io
 from docx.shared import Inches
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 from docx.shared import Pt, RGBColor
+from docx.shared import RGBColor
+from docx.oxml.ns import nsdecls
+from docx.oxml import parse_xml
 
 M = "floor.csv"
 df = pd.read_csv(M)
@@ -64,8 +67,8 @@ def resistance_table(df, doc):
         7: 0.5,
         8: 0.5,
         9: 0.5,
-        10:0.7,
-        11:0.6,
+        10: 0.7,
+        11: 0.6,
     }
 
     for j, col in enumerate(table_data.columns):
@@ -82,7 +85,20 @@ def resistance_table(df, doc):
     table.cell(0, num_cols).text = "Result"
     table.cell(0, num_cols).width = Inches(0.6)
     for i in range(num_rows):
-        table.cell(i + 1, num_cols).text = Results[i]
+        cell = table.cell(i + 1, num_cols)
+        cell.text = Results[i]
+
+        if Results[i] == "pass":
+            shading_elm = parse_xml(
+                r'<w:shd {} w:fill="#5ac85a"/>'.format(nsdecls("w"))
+            )  # Green color
+            cell._tc.get_or_add_tcPr().append(shading_elm)
+        elif Results[i] == "fail":
+            shading_elm = parse_xml(
+                r'<w:shd {} w:fill="#dc0000"/>'.format(nsdecls("w"))
+            )  # Red color
+            cell._tc.get_or_add_tcPr().append(shading_elm)
+
     table.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT
     font_size = 8
 
@@ -93,7 +109,6 @@ def resistance_table(df, doc):
                     run.font.size = Pt(font_size)
 
     return doc
-
 
 
 def flooresistance_combined_graph(df):

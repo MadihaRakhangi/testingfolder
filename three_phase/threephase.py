@@ -5,6 +5,9 @@ from docx.shared import Inches, Pt
 import numpy as np
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 import io
+from docx.shared import RGBColor
+from docx.oxml.ns import nsdecls
+from docx.oxml import parse_xml
 
 H="threephase.csv"
 tf=pd.read_csv("threephase.csv")
@@ -66,7 +69,6 @@ def threephase_result(tf, tf2):
     return tf
 
 
-
 def threephase_table(tf, doc):
     table_data = tf.values
     num_rows, num_cols = table_data.shape
@@ -99,13 +101,27 @@ def threephase_table(tf, doc):
     for i, row in enumerate(table_data, start=1):
         for j, value in enumerate(row):
             table.cell(i, j).text = str(value)
-        font_size = 6
+        # Add shading to the Result column based on the result value
+        result = table.cell(i, num_cols - 1).text
+        cell = table.cell(i, num_cols - 1)
+        if result == "PASS":
+            shading_elm = parse_xml(
+                '<w:shd {} w:fill="5ac85a"/>'.format(nsdecls("w"))
+            )  # Green color
+            cell._element.tcPr.append(shading_elm)
+        else:
+            shading_elm = parse_xml(
+                '<w:shd {} w:fill="dc0000"/>'.format(nsdecls("w"))
+            )  # Red color
+            cell._element.tcPr.append(shading_elm)
+    font_size = 6
     for row in table.rows:
         for cell in row.cells:
             for paragraph in cell.paragraphs:
                 for run in paragraph.runs:
                     run.font.size = Pt(font_size)
     return doc
+
 
 def threephase_combined_graph(tf):
     plt.figure(figsize=(16, 8))

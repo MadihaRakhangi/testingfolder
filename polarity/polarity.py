@@ -4,6 +4,9 @@ from docx import Document
 from docx.shared import Inches
 from docx.shared import Pt
 import io
+from docx.shared import RGBColor
+from docx.oxml.ns import nsdecls
+from docx.oxml import parse_xml
 
 D="pol.csv"
 af = pd.read_csv("pol.csv")
@@ -26,7 +29,6 @@ def polarityrang(length):
         res4.append(polarity_result(line_neutral))
     return res4
 
-
 def polarity_table(af, doc):
     table_data = af.iloc[:, 0:]
     num_rows, num_cols = table_data.shape
@@ -43,7 +45,7 @@ def polarity_table(af, doc):
         6: 0.5,
         7: 0.48,
         8: 0.71,
-       
+        num_cols: 0.8,  # Width for the "Result" column
     }
     for j, col in enumerate(table_data.columns):
         table.cell(0, j).text = col
@@ -53,10 +55,23 @@ def polarity_table(af, doc):
             table.cell(i, j).text = str(value)
     Results = polarityrang(num_rows)
     table.cell(0, num_cols).text = "Result"
-    table.cell(0, num_cols).width = Inches(0.8)
+    table.cell(0, num_cols).width = Inches(column_widths[num_cols])  # Set width for the "Result" column
     for i in range(num_rows):
         res_index = i
-        table.cell(i + 1, num_cols).text = Results[res_index]
+        result = Results[res_index]
+        cell = table.cell(i + 1, num_cols)
+        cell.text = result
+        if result == "OK":
+            shading_elm = parse_xml(
+                r'<w:shd {} w:fill="#5ac85a"/>'.format(nsdecls("w"))
+            )  # Green color
+            cell._tc.get_or_add_tcPr().append(shading_elm)
+        else:
+            shading_elm = parse_xml(
+                r'<w:shd {} w:fill="#dc0000"/>'.format(nsdecls("w"))
+            )  # Red color
+            cell._tc.get_or_add_tcPr().append(shading_elm)
+
     font_size = 7
 
     for row in table.rows:
