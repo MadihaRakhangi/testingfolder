@@ -1,4 +1,4 @@
-SN,Earth Pit Name,Earth Pit Location,No. of Parallel Electrodes,Earthing Application,Type of Earthing,Earth Electrode Depth,Nearest Electrode Distance,Measured Earth Resistance - Individual
+SN,Location,Parent  Location,No. of Parallel Electrodes,Earthing Application,Type of Earthing,Earth Electrode Depth,Nearest Electrode Distance,Measured Earth Resistance - Individual
 1,Earth Pit -1,Transformer Area,2,Body Earth,Chemical Electrode Earthing,3,2,1.9
 2,Earth Pit -2,Outdoor Area,2,Body Earth & Protection,Chemical Electrode Earthing,3,3,3.6
 3,Earth Pit -3,Transformer Area,2,Body Earth,Chemical Electrode Earthing,3,2,2.1
