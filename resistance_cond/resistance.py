@@ -5,6 +5,9 @@ from docx import Document
 import io
 from docx.shared import Inches
 from docx.shared import Pt
+from docx.shared import RGBColor
+from docx.oxml.ns import nsdecls
+from docx.oxml import parse_xml
 
 E="resistance.csv"
 jf=pd.read_csv(E)
@@ -58,6 +61,9 @@ def resc_rang(jf):
     return res5
 
 
+from docx.oxml.ns import nsdecls
+from docx.oxml import parse_xml
+
 def resc_table(jf, doc):
     table_data = jf.iloc[:, 0:]
     num_rows, num_cols = table_data.shape
@@ -77,7 +83,7 @@ def resc_table(jf, doc):
         9: 0.43,
         10: 0.56,
         11: 0.56, 
-        12:0.5   # Add this line
+        num_cols: 0.5  # Width for Result column
     }
     for j, col in enumerate(table_data.columns):
         table.cell(0, j).text = col
@@ -91,6 +97,19 @@ def resc_table(jf, doc):
     for i in range(num_rows):
         res_index = i
         table.cell(i + 1, num_cols).text = Results[res_index]
+        # Add shading to the Result column based on the result value
+        result = Results[res_index]
+        cell = table.cell(i + 1, num_cols)
+        if result == "Pass":
+            shading_elm = parse_xml(
+                r'<w:shd {} w:fill="#5ac85a"/>'.format(nsdecls("w"))
+            )  # Green color
+            cell._tc.get_or_add_tcPr().append(shading_elm)
+        else:
+            shading_elm = parse_xml(
+                r'<w:shd {} w:fill="#dc0000"/>'.format(nsdecls("w"))
+            )  # Red color
+            cell._tc.get_or_add_tcPr().append(shading_elm)
     font_size = 6.5
 
     for row in table.rows:
