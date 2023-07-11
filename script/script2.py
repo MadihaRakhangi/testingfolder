@@ -1082,9 +1082,19 @@ def insulation_table(df, doc):  # creates the insulation table with  result colo
     )  # Set width for the "Result" column
     for i in range(0, num_rows):
         res_index = i - 1
-        table.cell(i + 1, num_cols).text = Results[res_index]
-        if Results == "Pass":
-            shading_elem = parse_xml(f'<w:shd {nsdecls("w")} w:fill="d9ead3"/>')
+        cell = table.cell(i + 1, num_cols)
+        cell.text = Results[res_index]
+        
+        if Results[res_index] == "Pass":
+            shading_elm = parse_xml(
+                r'<w:shd {} w:fill="#5ac85a"/>'.format(nsdecls("w"))
+            )  # Green color
+            cell._tc.get_or_add_tcPr().append(shading_elm)
+        elif Results[res_index] == "Fail":
+            shading_elm = parse_xml(
+                r'<w:shd {} w:fill="#dc0000"/>'.format(nsdecls("w"))
+            )  # Red color
+            cell._tc.get_or_add_tcPr().append(shading_elm)
     font_size = 6.5
 
     for row in table.rows:
@@ -1134,8 +1144,21 @@ def phase_table(df, doc):  # creates the phase sequence table with  result colou
 
     table.cell(0, num_cols).text = "Result"
     for i, result in enumerate(results, start=1):
-        table.cell(i, num_cols).text = result
-        table.cell(i, num_cols).width = Inches(0.8)
+        cell = table.cell(i, num_cols)
+        cell.text = result
+        
+        if result == "CLOCKWISE":
+            shading_elm = parse_xml(
+                r'<w:shd {} w:fill="#5ac85a"/>'.format(nsdecls("w"))
+            )  # Green color
+            cell._tc.get_or_add_tcPr().append(shading_elm)
+        elif result == "ANTICLOCKWISE":
+            shading_elm = parse_xml(
+                r'<w:shd {} w:fill="#dc0000"/>'.format(nsdecls("w"))
+            )  # Red color
+            cell._tc.get_or_add_tcPr().append(shading_elm)
+
+        cell.width = Inches(column_widths[num_cols])  # Set width for the "Result" column
 
     font_size = 8
     for row in table.rows:
@@ -1144,6 +1167,7 @@ def phase_table(df, doc):  # creates the phase sequence table with  result colou
                 for run in paragraph.runs:
                     run.font.size = Pt(font_size)
     return doc
+
 
 
 def polarity_table(af, doc):  # creates the polairty table with  result coloumn
@@ -1177,6 +1201,25 @@ def polarity_table(af, doc):  # creates the polairty table with  result coloumn
             table.cell(i, j).text = str(value)
     Results = polarity_rang(num_rows)
     table.cell(0, num_cols).text = "Result"
+    
+    for i in range(num_rows):
+        res_index = i
+        result = Results[res_index]
+        cell = table.cell(i + 1, num_cols)
+        cell.text = result
+        if result == "OK":
+            shading_elm = parse_xml(
+                r'<w:shd {} w:fill="#5ac85a"/>'.format(nsdecls("w"))
+            )  # Green color
+            cell._tc.get_or_add_tcPr().append(shading_elm)
+        else:
+            shading_elm = parse_xml(
+                r'<w:shd {} w:fill="#dc0000"/>'.format(nsdecls("w"))
+            )  # Red color
+            cell._tc.get_or_add_tcPr().append(shading_elm)
+
+        cell.width = Inches(column_widths[num_cols])  # Set width for the "Result" column
+    
     table.cell(0, num_cols).width = Inches(0.8)
     for i in range(num_rows):
         res_index = i
@@ -1230,6 +1273,19 @@ def voltage_table(vf, doc):  # creates the voltage table with  result coloumn
     for i in range(num_rows):
         res_index = i
         table.cell(i + 1, num_cols).text = Results[res_index]
+        # Add shading to the Result column based on the result value
+        result = Results[res_index]
+        cell = table.cell(i + 1, num_cols)
+        if result == "Pass":
+            shading_elm = parse_xml(
+                '<w:shd {} w:fill="5ac85a"/>'.format(nsdecls('w'))
+            )  # Green color
+            cell._element.tcPr.append(shading_elm)
+        else:
+            shading_elm = parse_xml(
+                '<w:shd {} w:fill="dc0000"/>'.format(nsdecls('w'))
+            )  # Red color
+            cell._element.tcPr.append(shading_elm)
     font_size = 7
 
     for row in table.rows:
@@ -1296,6 +1352,19 @@ def residual_table(rf, doc):  # creates the residual  table with  result coloumn
     for i, row in enumerate(table_data.itertuples(), start=1):
         for j, value in enumerate(row[1:], start=0):
             table.cell(i, j).text = str(value)
+    for i in range(1, num_rows + 1):
+        result = table.cell(i, num_cols - 1).text
+        cell = table.cell(i, num_cols - 1)
+        if result == "Pass":
+            shading_elm = parse_xml(
+                r'<w:shd {} w:fill="#5ac85a"/>'.format(nsdecls("w"))
+            )  # Green color
+            cell._tc.get_or_add_tcPr().append(shading_elm)
+        else:
+            shading_elm = parse_xml(
+                r'<w:shd {} w:fill="#dc0000"/>'.format(nsdecls("w"))
+            )  # Red color
+            cell._tc.get_or_add_tcPr().append(shading_elm)
 
     font_size = 5
     for row in table.rows:
@@ -1438,6 +1507,19 @@ def threephase_table(tf, doc):  # creates the three phase table with  result col
     for i, row in enumerate(table_data, start=1):
         for j, value in enumerate(row):
             table.cell(i, j).text = str(value)
+        # Add shading to the Result column based on the result value
+        result = table.cell(i, num_cols - 1).text
+        cell = table.cell(i, num_cols - 1)
+        if result == "PASS":
+            shading_elm = parse_xml(
+                '<w:shd {} w:fill="5ac85a"/>'.format(nsdecls("w"))
+            )  # Green color
+            cell._element.tcPr.append(shading_elm)
+        else:
+            shading_elm = parse_xml(
+                '<w:shd {} w:fill="dc0000"/>'.format(nsdecls("w"))
+            )  # Red color
+            cell._element.tcPr.append(shading_elm)
         font_size = 6
     for row in table.rows:
         for cell in row.cells:
@@ -1486,6 +1568,19 @@ def resc_table(jf, doc):
     for i in range(num_rows):
         res_index = i
         table.cell(i + 1, num_cols).text = Results[res_index]
+        # Add shading to the Result column based on the result value
+        result = Results[res_index]
+        cell = table.cell(i + 1, num_cols)
+        if result == "Pass":
+            shading_elm = parse_xml(
+                r'<w:shd {} w:fill="#5ac85a"/>'.format(nsdecls("w"))
+            )  # Green color
+            cell._tc.get_or_add_tcPr().append(shading_elm)
+        else:
+            shading_elm = parse_xml(
+                r'<w:shd {} w:fill="#dc0000"/>'.format(nsdecls("w"))
+            )  # Red color
+            cell._tc.get_or_add_tcPr().append(shading_elm)
     font_size = 6.5
 
     for row in table.rows:
@@ -1533,8 +1628,19 @@ def func_ops_table(of, doc):
     table.cell(0, num_cols).text = "Result"
     table.cell(0, num_cols).width = Inches(0.8)
     for i in range(num_rows):
-        res_index = i
-        table.cell(i + 1, num_cols).text = Results[res_index]
+        cell = table.cell(i + 1, num_cols)
+        cell.text = Results[i]
+        
+        if Results[i] == "pass":
+            shading_elm = parse_xml(
+                r'<w:shd {} w:fill="#5ac85a"/>'.format(nsdecls("w"))
+            )  # Green color
+            cell._tc.get_or_add_tcPr().append(shading_elm)
+        elif Results[i] == "fail":
+            shading_elm = parse_xml(
+                r'<w:shd {} w:fill="#dc0000"/>'.format(nsdecls("w"))
+            )  # Red color
+            cell._tc.get_or_add_tcPr().append(shading_elm)
     font_size = 7
 
     for row in table.rows:
