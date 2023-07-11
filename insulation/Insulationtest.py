@@ -5,6 +5,9 @@ import csv
 import io
 from docx.shared import Inches
 from docx.shared import Pt
+from docx.shared import RGBColor
+from docx.oxml.ns import nsdecls
+from docx.oxml import parse_xml
 
 mf = pd.read_csv("Insulate.csv")
 
@@ -42,7 +45,6 @@ def insulationrang(length):
         print(Nom_CVolt)
     return res2
 
-
 def insulation_table(mf, doc):
     table_data = mf.iloc[:, 0:]
     num_rows, num_cols = table_data.shape
@@ -77,7 +79,20 @@ def insulation_table(mf, doc):
     table.cell(0, num_cols).width = Inches(column_widths[num_cols])  # Set width for the "Result" column
     for i in range(0, num_rows):
         res_index = i - 1
-        table.cell(i + 1, num_cols).text = Results[res_index]
+        cell = table.cell(i + 1, num_cols)
+        cell.text = Results[res_index]
+        
+        if Results[res_index] == "Satisfactory":
+            shading_elm = parse_xml(
+                r'<w:shd {} w:fill="#5ac85a"/>'.format(nsdecls("w"))
+            )  # Green color
+            cell._tc.get_or_add_tcPr().append(shading_elm)
+        elif Results[res_index] == "Unsatisfactory":
+            shading_elm = parse_xml(
+                r'<w:shd {} w:fill="#dc0000"/>'.format(nsdecls("w"))
+            )  # Red color
+            cell._tc.get_or_add_tcPr().append(shading_elm)
+    
     font_size = 6.5
 
     for row in table.rows:
@@ -129,7 +144,6 @@ def main():
     
     graph_combined = insulation_combined_graph(mf)
     doc.add_picture(graph_combined,width=Inches(8), height=Inches(4)) 
-  
     doc.save("outputTEST.docx")
 
 
