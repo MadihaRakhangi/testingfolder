@@ -27,6 +27,10 @@ def insualtion_result(Nom_CVolt, T_Volt, Insu_R):
             return "Unsatisfactory"
     else:
         return "Invalid input"
+    
+
+    
+
 
 def insulationrang(length):
     res2 = []
@@ -84,32 +88,36 @@ def insulation_table(mf, doc):
 
     return doc
 
+def insulation_combined_graph(mf):
+    mf = pd.read_csv("Insulate.csv")
 
-def insulation_graphs(mf):
     # Bar graph
     x = mf["Location"]
     y = mf["Nominal Circuit Voltage"]
 
-    plt.figure(figsize=(12, 6))  # Adjust the figsize as desired
-    colors = ["#d9534f", "#5bc0de", "#5cb85c", "#428bca"]  # Add more colors if needed
-    plt.bar(x, y, color=colors)
-    plt.xlabel("Location")
-    plt.ylabel("Nominal Circuit Voltage")
-    plt.title("Nominal Circuit Voltage by Location")
+    fig = plt.figure(figsize=(12, 6))  # Adjust the figsize as desired
+    ax1 = fig.add_subplot(121)
+    colors = ["#d9534f","#5bc0de","#5cb85c","#428bca"]                                       # Add more colors if needed
+    ax1.bar(x, y, color=colors)
+    ax1.set_xlabel("Location")
+    ax1.set_ylabel("Nominal Circuit Voltage")
+    ax1.set_title("Nominal Circuit Voltage by Location")
+    
 
     # Pie chart
     earthing_system_counts = mf["Earthing System"].value_counts()
-    colors = ["#b6d7a8", "#e06666"]
-    plt.figure(figsize=(6, 6))  # Adjust the figsize as desired
-    plt.pie(earthing_system_counts, labels=earthing_system_counts.index, autopct="%1.1f%%", colors=colors)
-    plt.title("Earthing System Distribution")
-    plt.axis("equal")
+    ax2 = fig.add_subplot(122)
+    colors = ["#5ac85a", "#dc0000"]
+    ax2.pie(earthing_system_counts, labels=earthing_system_counts.index, autopct="%1.1f%%", colors=colors)
+    ax2.set_title("Earthing System Distribution")
+    ax2.axis("equal")
+    
 
-    graph_combined = io.BytesIO()
-    plt.savefig(graph_combined)
+    graph_combined2 = io.BytesIO()
+    plt.savefig(graph_combined2)
     plt.close()
 
-    return graph_combined
+    return graph_combined2
 
 
 
@@ -119,7 +127,7 @@ def main():
     doc = docx.Document()
     doc = insulation_table(mf, doc)
     
-    graph_combined = insulation_graphs(mf)
+    graph_combined = insulation_combined_graph(mf)
     doc.add_picture(graph_combined,width=Inches(8), height=Inches(4)) 
   
     doc.save("outputTEST.docx")

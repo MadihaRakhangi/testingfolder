@@ -80,75 +80,90 @@ def earthpit_table(ef, doc):                                                    
     table_data = ef.iloc[:, 0:]
     num_rows, num_cols = table_data.shape[0], table_data.shape[1]
     table = doc.add_table(rows=num_rows + 1, cols=num_cols)
+    num_rows, num_cols = table_data.shape
     table.style = "Table Grid"
     table.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT
     table.autofit = False
 
     column_widths = {
         0: 0.25,
-        1: 0.54,
-        2: 0.6,
+        1: 0.6,
+        2: 0.7,
         3: 0.5,
-        4: 0.48,
+        4: 0.6,
         5: 0.56,
         6: 0.4,
         7: 0.4,
         8: 0.4,
-        9: 0.55,
+        9: 0.4,
         10: 0.5,
-        11: 0.6,
+        11: 0.7,
         12: 0.5
     }
 
     for j, col in enumerate(table_data.columns):
         table.cell(0, j).text = col
         table.cell(0, j).width = Inches(column_widths.get(j, 1))
-    first_row_cells = table.rows[0].cells
-    for cell in first_row_cells:
-        cell_elem = cell._element
-        tc_pr = cell_elem.get_or_add_tcPr()
-        shading_elem = parse_xml(
-            f'<w:shd {nsdecls("w")} w:fill="d9ead3"/>'
-        )
-        tc_pr.append(shading_elem)
+        table.cell(0, j).paragraphs[0].alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+
+    for j, col in enumerate(table_data.columns):
+        table.cell(0, j).text = col
+        table.cell(0, j).width = Inches(column_widths[j])
+        table.cell(0, j).paragraphs[0].alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+        first_row_cells = table.rows[0].cells
+        for cell in first_row_cells:
+            cell.paragraphs[0].alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+            cell_elem = cell._element
+            tc_pr = cell_elem.get_or_add_tcPr()
+            shading_elem = parse_xml(f'<w:shd {nsdecls("w")} w:fill="d9ead3"/>')
+            tc_pr.append(shading_elem)
 
     for i, row in enumerate(table_data.itertuples(), start=1):
         for j, value in enumerate(row[1:], start=0):
-            table.cell(i, j).text = str(value)
+            cell = table.cell(i, j)
+            cell.text = str(value)
+            cell.paragraphs[0].alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+            if j == num_cols - 1:  # Apply background color only to the Result column
+                result_cell = cell
+                if value.startswith("PASS"):
+                    shading_elm = parse_xml(
+                        r'<w:shd {} w:fill="#5ac85a"/>'.format(nsdecls("w"))
+                    )  # Green color
+                    result_cell._tc.get_or_add_tcPr().append(shading_elm)
+                elif value.startswith("FAIL"):
+                    shading_elm = parse_xml(
+                        r'<w:shd {} w:fill="#dc0000"/>'.format(nsdecls("w"))
+                    )  # Red color
+                    result_cell._tc.get_or_add_tcPr().append(shading_elm)
+    for section in doc.sections:
+        section.left_margin = Inches(0.2)
 
     font_size = 7
     for row in table.rows:
         for cell in row.cells:
             for paragraph in cell.paragraphs:
                 for run in paragraph.runs:
+                    run.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
                     run.font.size = Pt(font_size)
+                    run.font.name = "Calibri"
 
     return doc
-
-def earthpit_rang(length):
-    res2 = []
-    for row in range(length):  # Adjusted the range to start from 0
-        Elec_DistRatio= ef.iloc[row, 7]
-        Mea_EarthResist = ef.iloc[row, 8]
-        res2.append(earthpit_result(Elec_DistRatio, Mea_EarthResist))
-    return res2
-
 
 def Earth_combined_graph(ef):
     plt.figure(figsize=(16, 8))
 
     # Bar graph
     plt.subplot(121)
-    result_counts = ef["Result"].value_counts()
-    colors = ["#d9534f","#5bc0de","#5cb85c","#428bca"]  # Add more colors if needed
-    plt.bar(result_counts.index, result_counts.values, color=colors)  # Use 'color' instead of 'colors'
-    plt.xlabel("Result")
-    plt.ylabel("Count")
-    plt.title("Earth Pit Electrode Test Results (Bar Graph)")
+    x = ef[" Location"]
+    y = ef["Measured Earth Resistance - Individual"]
+    colors = ["#b967ff","#e0a899","#fffb96","#428bca"]  # Add more colors if needed
+    plt.bar(x,y, color=colors)  # Use 'color' instead of 'colors'
+    plt.xlabel("Location")
+    plt.ylabel("Measured Earth Resistance - Individual")
+    plt.title("Location VS Measured Earth Resistance - Individual graph")
 
     # Pie chart
     plt.subplot(122)
-    ef["Result"] = earthpit_rang(ef.shape[0])
     result_counts = ef["Result"].value_counts()
     labels = result_counts.index
     values = result_counts.values

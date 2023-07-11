@@ -930,16 +930,6 @@ def voltage_rang(length):                                                       
         res.append(voltage_result(VD_val, Type_ISS_val, PoS_val, Dist))
     return res
 
-def earthpit_rang(length):
-    res6 = []
-    for row in range(length):  # Adjusted the range to start from 0
-        Elec_DistRatio= ef.iloc[row, 7]
-        Mea_EarthResist = ef.iloc[row, 8]
-        res6.append(earthpit_result(Elec_DistRatio, Mea_EarthResist))
-    return res6
-
-
-
 def resc_rang(jf):
     res5 = []
     for row in range(0, len(jf)):
@@ -1314,14 +1304,15 @@ def earthpit_table(ef, doc):                                                    
     table_data = ef.iloc[:, 0:]
     num_rows, num_cols = table_data.shape[0], table_data.shape[1]
     table = doc.add_table(rows=num_rows + 1, cols=num_cols)
+    num_rows, num_cols = table_data.shape
     table.style = "Table Grid"
     table.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT
     table.autofit = False
 
     column_widths = {
         0: 0.25,
-        1: 0.54,
-        2: 0.6,
+        1: 0.6,
+        2: 0.7,
         3: 0.5,
         4: 0.48,
         5: 0.56,
@@ -1337,28 +1328,50 @@ def earthpit_table(ef, doc):                                                    
     for j, col in enumerate(table_data.columns):
         table.cell(0, j).text = col
         table.cell(0, j).width = Inches(column_widths.get(j, 1))
-    first_row_cells = table.rows[0].cells
-    for cell in first_row_cells:
-        cell_elem = cell._element
-        tc_pr = cell_elem.get_or_add_tcPr()
-        shading_elem = parse_xml(
-            f'<w:shd {nsdecls("w")} w:fill="d9ead3"/>'
-        )
-        tc_pr.append(shading_elem)
+        table.cell(0, j).paragraphs[0].alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+
+    for j, col in enumerate(table_data.columns):
+        table.cell(0, j).text = col
+        table.cell(0, j).width = Inches(column_widths[j])
+        table.cell(0, j).paragraphs[0].alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+        first_row_cells = table.rows[0].cells
+        for cell in first_row_cells:
+            cell.paragraphs[0].alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+            cell_elem = cell._element
+            tc_pr = cell_elem.get_or_add_tcPr()
+            shading_elem = parse_xml(f'<w:shd {nsdecls("w")} w:fill="d9ead3"/>')
+            tc_pr.append(shading_elem)
 
     for i, row in enumerate(table_data.itertuples(), start=1):
         for j, value in enumerate(row[1:], start=0):
-            table.cell(i, j).text = str(value)
+            cell = table.cell(i, j)
+            cell.text = str(value)
+            cell.paragraphs[0].alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+            if j == num_cols - 1:  # Apply background color only to the Result column
+                result_cell = cell
+                if value.startswith("PASS"):
+                    shading_elm = parse_xml(
+                        r'<w:shd {} w:fill="#5ac85a"/>'.format(nsdecls("w"))
+                    )  # Green color
+                    result_cell._tc.get_or_add_tcPr().append(shading_elm)
+                elif value.startswith("FAIL"):
+                    shading_elm = parse_xml(
+                        r'<w:shd {} w:fill="#dc0000"/>'.format(nsdecls("w"))
+                    )  # Red color
+                    result_cell._tc.get_or_add_tcPr().append(shading_elm)
+    for section in doc.sections:
+        section.left_margin = Inches(0.2)
 
     font_size = 7
     for row in table.rows:
         for cell in row.cells:
             for paragraph in cell.paragraphs:
                 for run in paragraph.runs:
+                    run.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
                     run.font.size = Pt(font_size)
+                    run.font.name = "Calibri"
 
     return doc
-
 
 def threephase_table(tf, doc):                                                                 #creates the three phase table with  result coloumn
     table_data = tf.values
@@ -1583,7 +1596,7 @@ def pat_table(bf, doc):
     return doc
 
 
-def create_eli_table1(sf1, doc):
+def eli_test_table1(sf1, doc):
     sf1 = sf1.fillna("")
     table_data = df.iloc[:, :]
     num_rows, num_cols = table_data.shape
@@ -1756,9 +1769,7 @@ def eli_test_table1(gf1, doc):
     for j, col in enumerate(table_data.columns):
         table.cell(0, j).text = col
         table.cell(0, j).width = Inches(column_widths.get(j, 1))
-        table.cell(0, j).paragraphs[
-            0
-        ].alignment = WD_PARAGRAPH_ALIGNMENT.CENTER  # Align cell text to the center
+        table.cell(0, j).paragraphs[0].alignment = WD_PARAGRAPH_ALIGNMENT.CENTER  # Align cell text to the center
 
     for j, col in enumerate(table_data.columns):
         table.cell(0, j).text = col
@@ -2080,7 +2091,6 @@ def Earth_combined_graph(ef):
 
     # Pie chart
     plt.subplot(122)
-    ef["Result"] = earthpit_rang(ef.shape[0])
     result_counts = ef["Result"].value_counts()
     labels = result_counts.index
     values = result_counts.values
@@ -2423,7 +2433,7 @@ def main():
     doc.add_picture(graph_combined, width=Inches(8), height=Inches(4)) 
 
     doc.add_paragraph("ELI SOCKET TEST")  
-    doc = create_eli_table1(sf1, doc)
+    doc = eli_test_table1(sf1, doc)
     doc.add_paragraph("\n")
     doc = create_eli_table2(sf2, doc)                                                                                                 # Add a table of voltage drop data to the document
     graph_combined = socket_combined_graph(sf)

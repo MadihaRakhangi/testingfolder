@@ -1,0 +1,22 @@
+loc_id,loc_name,loc_type_id,parent_id,granularity,type,name
+1,ABC Technologies,1,,0,site,Site
+2,LT Panel Room,2,1,1,fac_area,Electrical Panel Room
+3,Feeder 2,10,2,2,loc_type,Feeder
+4,MCB 1,7,3,3,loc_type,MCB
+5,MLTP 1,5,2,2,loc_type,Panel
+6,Main ACB,8,5,3,loc_type,ACB
+7,Main Floor Point 1,11,2,2,loc_type,Floor Wall Resistance Route
+8,Workshop MCC,3,1,1,fac_area,Workshop Area
+9,Feeder 3,10,8,2,loc_type,Feeder
+10,MCB 4,7,9,3,loc_type,MCB
+11,Workshop Area,3,1,1,fac_area,Workshop Area
+12,DB,6,11,2,loc_type,Distribution Board (DB)
+13,RCCB 1,12,12,3,loc_type,RCCB
+14,Hand Drill,13,11,2,loc_type,Portable Appliances
+15,Office Area,14,1,1,fac_area,Office Area
+16,PDU,15,15,2,loc_type,PDU
+17,Socket 4,16,16,3,loc_type,Socket
+18,Earth Pit 1,17,1,1,loc_type,Earth Pit
+19,Control Room,18,1,1,fac_area,Control Room
+20,Panel 1,5,19,2,loc_type,Panel
+21,Starter 1,19,20,3,loc_type,Starter

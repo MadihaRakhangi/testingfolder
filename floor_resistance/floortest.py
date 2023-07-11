@@ -35,7 +35,7 @@ def resistanceresult(Nom_EVolt, ATV, Eff_Floor, Dist_loc):
         return "Invalid input"
 
 
-def resistancerang(length):
+def flooresistancerang(length):
     res = []
     for row in range(length):
         Nom_EVolt = df.iloc[row, 5]
@@ -78,7 +78,7 @@ def resistance_table(df, doc):
                 value = "{:.2f}".format(value)
             table.cell(i, j).text = str(value)
 
-    Results = resistancerang(num_rows)
+    Results = flooresistancerang(num_rows)
     table.cell(0, num_cols).text = "Result"
     table.cell(0, num_cols).width = Inches(0.6)
     for i in range(num_rows):
@@ -95,39 +95,49 @@ def resistance_table(df, doc):
     return doc
 
 
+
 def flooresistance_combined_graph(df):
-    plt.figure(figsize=(16, 8))
+    try:
+        plt.figure(figsize=(16, 8))
 
-    # Scatter plot
-    plt.subplot(121)
-    x = df["Location"]
-    y = df["EffectiveResistance"]
-    colors = ["#d9534f", "#5bc0de", "#5cb85c", "#428bca"]
-    plt.bar(x, y, color=colors)
-    plt.xlabel("Location")
-    plt.ylabel("Effectivefloor")
-    plt.title("Location VS Effectivefloor (Scatter Plot)")
+        # Bar graph
+        plt.subplot(121)
+        x = df["Location"]
+        y = df["EffectiveResistance"]
+        colors = ["#d9534f", "#5bc0de", "#5cb85c", "#428bca"]
+        plt.bar(x, y, color=colors)
+        plt.xlabel("Location")
+        plt.ylabel("Effectivefloor")
+        plt.title("Location VS Effectivefloor (Scatter Plot)")
 
-    # Pie chart
-    plt.subplot(122)
-    df['Result'] = resistancerang(df.shape[0])
-    df_counts = df['Result'].value_counts()
-    labels = df_counts.index.tolist()
-    values = df_counts.values.tolist()
-    colors = ["#5ac85a", "#dc0000"]
-    plt.pie(values, labels=labels, autopct='%1.1f%%', startangle=90, colors=colors)
-    plt.title('Test Results')
-    plt.axis('equal')
+        # Pie chart
+        plt.subplot(122)
+        df['Result'] = flooresistancerang(df.shape[0])
+        df_counts = df['Result'].value_counts()
+        labels = df_counts.index.tolist()
+        values = df_counts.values.tolist()
+        colors = ["#5ac85a", "#dc0000"]
+        plt.pie(values, labels=labels, autopct='%1.1f%%', startangle=90, colors=colors)
+        plt.title('Test Results')
+        plt.axis('equal')
 
-    # Save the combined graph
-    plt.savefig("combined_graph.png")
+        # Save the combined graph as bytes
+        graph_combined1 = io.BytesIO()
+        plt.savefig(graph_combined1)
+        plt.close()
 
-    # Save the combined graph as bytes
-    graph_combined = io.BytesIO()
-    plt.savefig(graph_combined)
-    plt.close()
+        # Check if the graph was saved successfully
+        if graph_combined1.tell() == 0:
+            print("Graph not found")
+            return None
 
-    return graph_combined
+        return graph_combined1
+
+    except Exception as e:
+        # Handle the error
+        print(f"An error occurred: {str(e)}")
+        return None
+
 
 
 

@@ -64,7 +64,7 @@ TMS = 1
 TDS = 1
 
 
-def socket_result1(sf1, df2):
+def socket_result1(sf1, sf2):
     I = Is * ((((K * TMS) / Td) + 1) ** (1 / P))
     if row["Earthing Configuration"] == "TN":
         IEC_val_TN = row["V_LE"] / I
@@ -463,4 +463,3 @@ main()
 
 
 
-print(sf2)
