@@ -29,7 +29,7 @@ vf = pd.read_csv("voltage.csv")
 F= "residual.csv"
 rf = pd.read_csv("residual.csv")
 G = "earthpit.csv"
-ef = pd.read_csv(G)
+ef = pd.read_csv("earthpit.csv")
 H="threephase.csv"
 tf=pd.read_csv("threephase.csv")
 I="threephasevalue.csv"
@@ -48,7 +48,7 @@ gf = pd.read_csv("eli-test.csv")
 fg = pd.read_csv("sugg-max-eli.csv")
 
 
-df["EffectiveResistance"] = df["Applied Test Voltage (V)"] / df["Measured Output Current (mA)"]          #floor resistance calculation      
+df["Effective Resistance"] = df["Applied Test Voltage (V)"] / df["Measured Output Current (mA)"]          #floor resistance calculation      
 df.to_csv("floorfinal.csv", index=False)
 
 
@@ -947,7 +947,7 @@ def func_ops_rang(of):
     return res6
 
 
-def resistance_table(df, doc):                                                                      #creates the floor and wall resistance table with  result coloumn
+def flooresistance_table(df, doc):
     table_data = df.iloc[:, :]
     num_rows, num_cols = table_data.shape
     table = doc.add_table(rows=num_rows + 1, cols=num_cols + 1)
@@ -962,24 +962,25 @@ def resistance_table(df, doc):                                                  
         4: 0.5,
         5: 0.5,
         6: 0.5,
-        7: 0.5,
-        8: 0.5,
-        9: 0.5,
-        10: 0.7,
-        11: 0.6,
+        7: 0.7,
+        8: 0.7,
+        9: 0.65,
+        10: 0.4,
+        11: 0.8,
     }
 
     for j, col in enumerate(table_data.columns):
         table.cell(0, j).text = col
         table.cell(0, j).width = Inches(column_widths[j])
-    first_row_cells = table.rows[0].cells
-    for cell in first_row_cells:
-        cell_elem = cell._element
-        tc_pr = cell_elem.get_or_add_tcPr()
-        shading_elem = parse_xml(
-            f'<w:shd {nsdecls("w")} w:fill="d9ead3"/>'
-        )
-        tc_pr.append(shading_elem)
+        table.cell(0, j).paragraphs[0].alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+        first_row_cells = table.rows[0].cells
+        for cell in first_row_cells:
+            cell.paragraphs[0].alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+            cell_elem = cell._element
+            tc_pr = cell_elem.get_or_add_tcPr()
+            shading_elem = parse_xml(f'<w:shd {nsdecls("w")} w:fill="d9ead3"/>')
+            tc_pr.append(shading_elem)
+
     for i, row in enumerate(table_data.itertuples(), start=1):
         for j, value in enumerate(row[1:], start=0):
             if isinstance(value, float):
@@ -990,7 +991,20 @@ def resistance_table(df, doc):                                                  
     table.cell(0, num_cols).text = "Result"
     table.cell(0, num_cols).width = Inches(0.6)
     for i in range(num_rows):
-        table.cell(i + 1, num_cols).text = Results[i]
+        cell = table.cell(i + 1, num_cols)
+        cell.text = Results[i]
+
+        if Results[i] == "Pass":
+            shading_elm = parse_xml(
+                r'<w:shd {} w:fill="#5ac85a"/>'.format(nsdecls("w"))
+            )  # Green color
+            cell._tc.get_or_add_tcPr().append(shading_elm)
+        elif Results[i] == "Fail":
+            shading_elm = parse_xml(
+                r'<w:shd {} w:fill="#dc0000"/>'.format(nsdecls("w"))
+            )  # Red color
+            cell._tc.get_or_add_tcPr().append(shading_elm)
+
     table.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT
     font_size = 8
 
@@ -1314,14 +1328,14 @@ def earthpit_table(ef, doc):                                                    
         1: 0.6,
         2: 0.7,
         3: 0.5,
-        4: 0.48,
+        4: 0.6,
         5: 0.56,
-        6: 0.4,
-        7: 0.4,
-        8: 0.4,
-        9: 0.55,
-        10: 0.5,
-        11: 0.6,
+        6: 0.55,
+        7: 0.55,
+        8: 0.6,
+        9: 0.6,
+        10: 0.6,
+        11: 0.7,
         12: 0.5
     }
 
@@ -1372,6 +1386,7 @@ def earthpit_table(ef, doc):                                                    
                     run.font.name = "Calibri"
 
     return doc
+
 
 def threephase_table(tf, doc):                                                                 #creates the three phase table with  result coloumn
     table_data = tf.values
@@ -1889,21 +1904,22 @@ def eli_test_table2(df2, doc):
 
 
 def flooresistance_combined_graph(df):
+
     plt.figure(figsize=(16, 8))
-
-    # bar graph
-    plt.subplot(121)
+    plt.subplot(121)  # Sort the DataFrame by "Location" in ascending order
     x = df["Location"]
-    y = df["EffectiveResistance"]
-    colors = ["#d9534f", "#5bc0de", "#5cb85c", "#428bca"]
-    plt.bar(x, y, color=colors)
+    y = df["Effective Resistance"]
+    colors = ["#b967ff", "#e0a899", "#fffb96", "#428bca"]  # Add more colors if needed
+    sorted_indices = np.argsort(y)  # Sort the indices based on y values
+    x_sorted = [x[i] for i in sorted_indices]
+    y_sorted = [y[i] for i in sorted_indices]
+    plt.bar(x_sorted, y_sorted, color=colors)
     plt.xlabel("Location")
-    plt.ylabel("Effectivefloor")
-    plt.title("Location VS Effectivefloor (Scatter Plot)")
-
+    plt.ylabel("Effective Floor Resistance")
+    plt.title("Location VS Effective Floor Resistance (Bar Graph)")
     # Pie chart
     plt.subplot(122)
-    df['Result'] =flooresistance_rang(df.shape[0])
+    df['Result'] = flooresistance_rang(df.shape[0])
     df_counts = df['Result'].value_counts()
     labels = df_counts.index.tolist()
     values = df_counts.values.tolist()
@@ -1917,6 +1933,9 @@ def flooresistance_combined_graph(df):
     plt.close()
 
     return graph_combined1
+
+        
+
 
 
 
@@ -2082,22 +2101,32 @@ def Earth_combined_graph(ef):
 
     # Bar graph
     plt.subplot(121)
-    result_counts = ef["Result"].value_counts()
-    colors = ["#d9534f","#5bc0de","#5cb85c","#428bca"]  # Add more colors if needed
-    plt.bar(result_counts.index, result_counts.values, color=colors)  # Use 'color' instead of 'colors'
-    plt.xlabel("Result")
-    plt.ylabel("Count")
-    plt.title("Earth Pit Electrode Test Results (Bar Graph)")
+    x = ef["Location"]
+    y = ef["Measured Earth Resistance - Individual"]
+    colors = ["#b967ff", "#e0a899", "#fffb96", "#428bca"]  # Add more colors if needed
+    sorted_indices = np.argsort(y)  # Sort the indices based on y values
+    x_sorted = [x[i] for i in sorted_indices]
+    y_sorted = [y[i] for i in sorted_indices]
+    plt.bar(x_sorted, y_sorted, color=colors)
+    plt.xlabel("Location")
+    plt.ylabel("Measured Earth Resistance - Individual")
+    plt.title("Location VS Measured Earth Resistance - Individual graph")
 
-    # Pie chart
+    # Bar graph - Result
     plt.subplot(122)
     result_counts = ef["Result"].value_counts()
-    labels = result_counts.index
-    values = result_counts.values
-    colors = ["#5ac85a", "#dc0000"]
-    plt.pie(values, labels=labels, colors=colors, autopct='%1.1f%%', startangle=90)
-    plt.title("Earth Pit Electrode Test Results (Pie Chart)")
-    plt.axis('equal')
+    result_counts_sorted = result_counts.sort_values()  # Sort the result_counts in ascending order
+    x = np.arange(result_counts_sorted.shape[0])
+    width = 0.2
+    colors = ["#5ac85a", "#dc0000"]  # Add more colors if needed
+    plt.bar(x, result_counts_sorted, width, color=colors)
+    plt.xlabel("Result")
+    plt.ylabel("Location Count")
+    plt.title("Earth Pit Electrode Test Results (Bar Graph)")
+    plt.xticks(x, result_counts_sorted.index)
+    plt.yticks(np.arange(min(result_counts_sorted), max(result_counts_sorted)+1))
+
+    plt.tight_layout()
     graph_combined = io.BytesIO()
     plt.savefig(graph_combined)
     plt.close()
@@ -2374,8 +2403,8 @@ def main():
         run.font.name = "Calibri"                                                                                   # Replace with the desired font name
         run.font.size = Pt(7)                                                                                       # Replace with the desired font size
 
-    doc.add_paragraph("FLOOR-RESISTANCE TEST")
-    doc = resistance_table(df, doc)                                                                                     # Add a table of resistance data to the document
+    doc.add_paragraph("FLOOR AND WALL RESISTANCE TEST")
+    doc = flooresistance_table(df, doc)                                                                                     # Add a table of resistance data to the document
     graph_combined = flooresistance_combined_graph(df)
     doc.add_picture(graph_combined, width=Inches(8), height=Inches(3))                                                                                     # Add the resistance pie chart to the document
 

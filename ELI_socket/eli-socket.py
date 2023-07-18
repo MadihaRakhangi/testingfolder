@@ -419,34 +419,92 @@ def create_eli_table2(sf2, doc):
 
     return doc
 
+# def socket_combined_graph(sf):
+#     plt.figure(figsize=(16, 8))
+
+#     # Bar graph
+#     plt.subplot(121)
+#     x= sf["Facility Area"]
+#     y= sf["Upstream Breaker Rating (A)"]
+#     colors = ["#d9534f", "#5bc0de", "#5cb85c", "#428bca"]
+#     plt.bar(x, y, color=colors)
+#     plt.xlabel("Facility Area")
+#     plt.ylabel("Upstream Breaker Rating (A)")
+#     plt.title("Facility Area VS  Upstream Breaker Rating (A)")
+
+#     # Pie chart
+#     plt.subplot(122)
+#     plt.subplot(122)
+#     result_counts = sf.groupby(["Socket Type", "Result", "Socket Rating (A)"]).size().unstack(fill_value=0)
+#     x = np.arange(result_counts.shape[0])
+#     width = 0.2
+#     colors = ["#b967ff", "#e0a899", "#fffb96", "#428bca"]  # Add more colors if needed
+#     for i, column in enumerate(result_counts.columns):
+#         plt.bar(x + i * width, result_counts[column], width, label=column, color=colors[i])
+
+#     plt.xlabel("Location")
+#     plt.ylabel("Result and Remark")
+#     plt.title("Earth Pit Electrode Test Results (Bar Graph)")
+#     plt.xticks(x, result_counts.index, rotation=45)
+#     plt.legend()
+
+#     plt.tight_layout()
+#     graph_combined = io.BytesIO()
+#     plt.savefig(graph_combined)
+#     plt.close()
+
+#     # result_counts = sf2["Result"].value_counts()
+#     # labels = result_counts.index
+#     # values= result_counts.values
+
+#     # colors = ["#5ac85a", "#dc0000"]
+#     # plt.pie(values, labels=labels, autopct="%1.1f%%", shadow=False, startangle=90, colors=colors)
+#     # plt.title("Residual Test Results")
+#     # plt.axis("equal")  # Equal aspect ratio ensures that the pie is drawn as a circle
+
+#     graph_combined = io.BytesIO()
+#     plt.savefig(graph_combined)
+#     plt.close()
+
+#     return graph_combined
+
 def socket_combined_graph(sf):
     plt.figure(figsize=(16, 8))
 
     # Bar graph
     plt.subplot(121)
-    x= sf["Facility Area"]
-    y= sf["Upstream Breaker Rating (A)"]
+    x = sf["Facility Area"]
+    y = sf["Upstream Breaker Rating (A)"]
     colors = ["#d9534f", "#5bc0de", "#5cb85c", "#428bca"]
     plt.bar(x, y, color=colors)
     plt.xlabel("Facility Area")
     plt.ylabel("Upstream Breaker Rating (A)")
-    plt.title("Facility Area VS  Upstream Breaker Rating (A)")
+    plt.title("Facility Area VS Upstream Breaker Rating (A)")
 
-    # Pie chart
+    # Bar graph - Result and Socket Rating
     plt.subplot(122)
-    result_counts = sf2["Result"].value_counts()
-    labels = result_counts.index
-    values= result_counts.values
+    result_counts = sf.groupby(["Socket Type", "Result", "Socket Rating (A)"]).size().unstack(fill_value=0)
+    locations = result_counts.index
+    num_locations = len(locations)
+    x = np.arange(num_locations)
+    width = 0.2
+    colors = ["#b967ff", "#e0a899", "#fffb96", "#428bca"]  # Add more colors if needed
+    for i, column in enumerate(result_counts.columns):
+        plt.bar(x + i * width, result_counts[column], width, label=column, color=colors[i])
 
-    colors = ["#5ac85a", "#dc0000"]
-    plt.pie(values, labels=labels, autopct="%1.1f%%", shadow=False, startangle=90, colors=colors)
-    plt.title("Residual Test Results")
-    plt.axis("equal")  # Equal aspect ratio ensures that the pie is drawn as a circle
+    plt.xlabel("Socket Type")
+    plt.ylabel("Count")
+    plt.title("Socket Type VS Result and Socket Rating (A)")
+    plt.xticks(x + (width * len(result_counts.columns)) / 2, locations, rotation=45)
+    plt.legend()
+
+    plt.tight_layout()
     graph_combined = io.BytesIO()
     plt.savefig(graph_combined)
     plt.close()
 
     return graph_combined
+
 
 def main():
     doc = Document()

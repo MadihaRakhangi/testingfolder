@@ -4,6 +4,7 @@ import docx
 from docx import Document
 import csv
 import io
+import numpy as np
 from docx.shared import Inches
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 from docx.shared import Pt, RGBColor
@@ -16,7 +17,7 @@ df = pd.read_csv(M)
 
 
 
-df['EffectiveResistance'] = df['Applied Test Voltage (V)'] / df['Measured Output Current (mA)']
+df['Effective Resistance'] = df['Applied Test Voltage (V)'] / df['Measured Output Current (mA)']
 df.to_csv('floorfinal.csv', index=False)
 
 
@@ -49,7 +50,7 @@ def flooresistancerang(length):
     return res
 
 
-def resistance_table(df, doc):
+def flooresistance_table(df, doc):
     table_data = df.iloc[:, :]
     num_rows, num_cols = table_data.shape
     table = doc.add_table(rows=num_rows + 1, cols=num_cols + 1)
@@ -64,16 +65,24 @@ def resistance_table(df, doc):
         4: 0.5,
         5: 0.5,
         6: 0.5,
-        7: 0.5,
-        8: 0.5,
-        9: 0.5,
-        10: 0.7,
-        11: 0.6,
+        7: 0.7,
+        8: 0.7,
+        9: 0.65,
+        10: 0.4,
+        11: 0.8,
     }
 
     for j, col in enumerate(table_data.columns):
         table.cell(0, j).text = col
         table.cell(0, j).width = Inches(column_widths[j])
+        table.cell(0, j).paragraphs[0].alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+        first_row_cells = table.rows[0].cells
+        for cell in first_row_cells:
+            cell.paragraphs[0].alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+            cell_elem = cell._element
+            tc_pr = cell_elem.get_or_add_tcPr()
+            shading_elem = parse_xml(f'<w:shd {nsdecls("w")} w:fill="d9ead3"/>')
+            tc_pr.append(shading_elem)
 
     for i, row in enumerate(table_data.itertuples(), start=1):
         for j, value in enumerate(row[1:], start=0):
@@ -115,15 +124,18 @@ def flooresistance_combined_graph(df):
     try:
         plt.figure(figsize=(16, 8))
 
-        # Bar graph
-        plt.subplot(121)
+        plt.subplot(121)  # Sort the DataFrame by "Location" in ascending order
         x = df["Location"]
-        y = df["EffectiveResistance"]
-        colors = ["#d9534f", "#5bc0de", "#5cb85c", "#428bca"]
-        plt.bar(x, y, color=colors)
+        y = df["Effective Resistance"]
+        colors = ["#b967ff", "#e0a899", "#fffb96", "#428bca"]  # Add more colors if needed
+        sorted_indices = np.argsort(y)  # Sort the indices based on y values
+        x_sorted = [x[i] for i in sorted_indices]
+        y_sorted = [y[i] for i in sorted_indices]
+        plt.bar(x_sorted, y_sorted, color=colors)
         plt.xlabel("Location")
-        plt.ylabel("Effectivefloor")
-        plt.title("Location VS Effectivefloor (Scatter Plot)")
+        plt.ylabel("Effective Floor Resistance")
+        plt.title("Location VS Effective Floor Resistance (Bar Graph)")
+
 
         # Pie chart
         plt.subplot(122)
@@ -160,8 +172,8 @@ def main():
     M = "floor.csv"
     df = pd.read_csv("floorfinal.csv")
     doc = docx.Document()
-    doc.add_heading('FLOOR TEST', 0)
-    doc = resistance_table(df, doc)
+    doc.add_heading('FLOOR  AND WALL RESISTANCE TEST', 0)
+    doc = flooresistance_table(df, doc)
     graph_combined = flooresistance_combined_graph(df)
     doc.add_picture(graph_combined, width=Inches(8), height=Inches(3))
     doc.save("floor.docx")

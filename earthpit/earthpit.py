@@ -156,28 +156,43 @@ def Earth_combined_graph(ef):
     plt.subplot(121)
     x = ef["Location"]
     y = ef["Measured Earth Resistance - Individual"]
-    colors = ["#b967ff","#e0a899","#fffb96","#428bca"]  # Add more colors if needed
-    plt.bar(x,y, color=colors)  # Use 'color' instead of 'colors'
+    colors = ["#b967ff", "#e0a899", "#fffb96", "#428bca"]  # Add more colors if needed
+    sorted_indices = np.argsort(y)  # Sort the indices based on y values
+    x_sorted = [x[i] for i in sorted_indices]
+    y_sorted = [y[i] for i in sorted_indices]
+    plt.bar(x_sorted, y_sorted, color=colors)
     plt.xlabel("Location")
     plt.ylabel("Measured Earth Resistance - Individual")
     plt.title("Location VS Measured Earth Resistance - Individual graph")
 
-    # Pie chart
+    # Bar graph - Result
     plt.subplot(122)
     result_counts = ef["Result"].value_counts()
-    labels = result_counts.index
-    values = result_counts.values
-    colors = ["#dc0000","#5ac85a"]
-    plt.pie(values, labels=labels, colors=colors, autopct='%1.1f%%', startangle=90)
-    plt.title("Earth Pit Electrode Test Results (Pie Chart)")
-    plt.axis('equal')
-    
+    result_counts_sorted = result_counts.sort_values()  # Sort the result_counts in ascending order
+    x = np.arange(result_counts_sorted.shape[0])
+    width = 0.2
+    colors = ["#b967ff", "#e0a899", "#fffb96", "#428bca"]  # Add more colors if needed
+    plt.bar(x, result_counts_sorted, width, color=colors)
+    plt.xlabel("Result")
+    plt.ylabel("Location Count")
+    plt.title("Earth Pit Electrode Test Results (Bar Graph)")
+    plt.xticks(x, result_counts_sorted.index)
+    plt.yticks(np.arange(min(result_counts_sorted), max(result_counts_sorted)+1))
+
+    plt.tight_layout()
     graph_combined = io.BytesIO()
     plt.savefig(graph_combined)
     plt.close()
 
-
     return graph_combined
+
+
+
+
+
+
+
+
 
 
 def main():

@@ -1,5 +1,5 @@
 SN,Location,ParentLocation,No. of Parallel Electrodes,Earthing Application,Type of Earthing,Earth Electrode Depth,Nearest Electrode Distance,Measured Earth Resistance - Individual
-1,Earth Pit -1,Transformer Area,2,Body Earth,Chemical Electrode Earthing,3,2,3.9
+1,Earth Pit -1,Transformer Area,2,Body Earth,Chemical Electrode Earthing,3,2,1.9
 2,Earth Pit -2,Outdoor Area,2,Body Earth & Protection,Chemical Electrode Earthing,3,3,3.6
 3,Earth Pit -3,Transformer Area,2,Body Earth,Chemical Electrode Earthing,3,2,2.1
 4,Earth Pit -4,Outdoor Area,2,Body Earth & Protection,Chemical Electrode Earthing,3,3,1.5
