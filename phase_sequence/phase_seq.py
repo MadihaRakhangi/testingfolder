@@ -14,7 +14,6 @@ from docx.oxml import parse_xml
 C="phasesequence.csv"
 pf = pd.read_csv("phasesequence.csv")
 
-
 def phase_result(phase_seq):
     if phase_seq == 'RYB':
         return "CLOCKWISE"
