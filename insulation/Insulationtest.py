@@ -69,7 +69,7 @@ def insulation_table(mf, doc):
         num_cols: 0.8  # Width for the "Result" column
     }
     for j, col in enumerate(table_data.columns):
-        table.cell(0, j).text = col
+        table.cell(0, j).text = col 
         table.cell(0, j).width = Inches(column_widths[j])
     for i, row in enumerate(table_data.itertuples(), start=1):
         for j, value in enumerate(row[1:], start=0):
