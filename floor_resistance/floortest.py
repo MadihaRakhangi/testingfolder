@@ -25,16 +25,16 @@ df.to_csv('floorfinal.csv', index=False)
 def resistanceresult(Nom_EVolt, ATV, Eff_Floor, Dist_loc):
     if Nom_EVolt <= 500 and Dist_loc >= 1:
         if ATV == Nom_EVolt and Eff_Floor >= 50:
-            return "pass"
+            return "Pass"
         else:
-            return "fail"
+            return "Fail"
     elif Nom_EVolt > 500 and Dist_loc >= 1:
         if ATV == Nom_EVolt and Eff_Floor >= 100:
-            return "pass"
+            return "Pass"
         else:
-            return "fail"
+            return "Fail"
     elif Dist_loc <= 1:
-        return "fail"
+        return "Fail"
     else:
         return "Invalid input"
 

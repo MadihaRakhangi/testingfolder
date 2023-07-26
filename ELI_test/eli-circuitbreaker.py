@@ -417,13 +417,17 @@ def eli_test_combined_graph(gf):
 
     # Bar graph
     plt.subplot(121)
-    x= gf["Facility Area"]
-    y= gf["Device Rating (A)"]
+    x = gf1['Device Type'] + ', ' + gf1['Device Rating (A)'].astype(str)
+    result_counts = gf2["Result"].value_counts()
+    y = result_counts.values
     colors = ["#d9534f", "#5bc0de", "#5cb85c", "#428bca"]
-    plt.bar(x, y, color=colors)
-    plt.xlabel("Facility Area")
+    sorted_indices = np.argsort(y)  # Sort the indices based on y values
+    x_sorted = [x[i] for i in sorted_indices]
+    y_sorted = [y[i] for i in sorted_indices]
+    plt.bar(x_sorted, y_sorted, color=colors)
+    plt.xlabel("Device type + device rating ")
     plt.ylabel("Device Rating (A)")
-    plt.title("Facility Area VS  Device Rating (A) ")
+    plt.title(" eli circuit breaker test")
 
     # Pie chart
     plt.subplot(122)
@@ -452,5 +456,3 @@ def main():
     doc.save("ELI_Report.docx")
 
 main()
-
-

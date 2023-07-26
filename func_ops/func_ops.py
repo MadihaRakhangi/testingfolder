@@ -13,13 +13,13 @@ of = pd.read_csv(H)
 
 def func_ops_result(func_chk,inter_chk):
     if func_chk == "OK" and inter_chk == "OK":
-        return "pass"
+        return "Pass"
     elif func_chk == "OK" and inter_chk == "Not OK":
-        return "fail"
+        return "Fail"
     elif func_chk == "Not OK " and inter_chk == "OK":
-        return "fail"
+        return "Fail"
     elif func_chk == "Not OK" and inter_chk == "OK":
-        return "fail"
+        return "Fail"
     else:
         return "Invalid"
     
@@ -71,12 +71,12 @@ def func_ops_table(of, doc):
         cell = table.cell(i + 1, num_cols)
         cell.text = Results[i]
         
-        if Results[i] == "pass":
+        if Results[i] == "Pass":
             shading_elm = parse_xml(
                 r'<w:shd {} w:fill="#5ac85a"/>'.format(nsdecls("w"))
             )  # Green color
             cell._tc.get_or_add_tcPr().append(shading_elm)
-        elif Results[i] == "fail":
+        elif Results[i] == "Fail":
             shading_elm = parse_xml(
                 r'<w:shd {} w:fill="#dc0000"/>'.format(nsdecls("w"))
             )  # Red color

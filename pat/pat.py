@@ -22,7 +22,7 @@ bf = pd.read_csv("pat.csv")
 def pat_table(bf, doc):
     table_data = bf.iloc[:, 0:]
     num_rows, num_cols = table_data.shape
-    table = doc.add_table(rows=num_rows + 1, cols=num_cols + 1)
+    table = doc.add_table(rows=num_rows + 1, cols=num_cols)
     table.style = "Table Grid"
     table.autofit = False
 

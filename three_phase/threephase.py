@@ -67,6 +67,7 @@ def threephase_result(tf, tf2):
         "FAIL",
     )
     return tf
+print(tf)
 
 
 def threephase_table(tf, doc):
